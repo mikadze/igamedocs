@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — Tech Stack Deep Dive</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #06060b;
+  --surface: #0c0c14;
+  --surface2: #111119;
+  --surface3: #17171f;
+  --border: #1a1a28;
+  --border-bright: #2a2a3e;
+  --text: #c8c8d8;
+  --text-dim: #5e5e72;
+  --text-head: #eeeef4;
+  --red: #e84545;
+  --orange: #f7a733;
+  --cyan: #00d2ff;
+  --green: #22c55e;
+  --purple: #a855f7;
+  --pink: #ec4899;
+  --lime: #84cc16;
+  --yellow: #eab308;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ===== HEADER ===== */
+.header {
+  padding: 40px 48px 28px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(6,6,11,0.92);
+  backdrop-filter: blur(16px);
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.logo-mark {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--red), var(--orange));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 0 20px rgba(232,69,69,0.15);
+}
+
+.brand h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  color: var(--text-head);
+  letter-spacing: -0.5px;
+}
+
+.brand h1 span { color: var(--red); }
+
+.page-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ===== NAV TABS ===== */
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 16px 48px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  overflow-x: auto;
+}
+
+.nav-tab {
+  padding: 10px 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.25s;
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan);
+}
+
+/* ===== CONTENT ===== */
+.content { padding: 0 48px 80px; max-width: 1400px; }
+
+.section {
+  display: none;
+  padding-top: 40px;
+  animation: fadeUp 0.4s ease;
+}
+
+.section.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-head);
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.section-desc {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  max-width: 680px;
+  line-height: 1.7;
+}
+
+/* ===== STACK LAYERS ===== */
+.stack-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 48px;
+}
+
+.stack-layer {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.stack-layer:hover { border-color: var(--border-bright); }
+
+.stack-label {
+  background: var(--surface);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+
+.stack-label-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.stack-label-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.stack-techs {
+  padding: 16px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: var(--surface2);
+}
+
+.tech-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.tech-chip:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-1px);
+}
+
+.tech-chip .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot-std { background: var(--cyan); }
+.dot-new { background: var(--green); }
+.dot-avx { background: var(--red); }
+.dot-alt { background: var(--purple); }
+
+/* Legend */
+.legend {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.legend-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ===== CHALLENGE / OPPORTUNITY CARDS ===== */
+.co-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.co-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.co-card:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-2px);
+}
+
+.co-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.co-card.challenge::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+.co-card.opportunity::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+.co-card.disrupt::before { background: linear-gradient(90deg, var(--purple), var(--pink)); }
+
+.co-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 12px;
+}
+
+.co-card.challenge .co-badge { color: var(--orange); }
+.co-card.opportunity .co-badge { color: var(--green); }
+.co-card.disrupt .co-badge { color: var(--purple); }
+
+.co-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-head);
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.co-desc {
+  font-size: 13.5px;
+  color: var(--text);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.co-impact {
+  font-size: 11.5px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.co-impact strong {
+  color: var(--text-head);
+}
+
+/* ===== COMPARISON TABLE ===== */
+.comp-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.comp-table th {
+  background: var(--surface);
+  padding: 14px 18px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.comp-table th:first-child { width: 200px; }
+
+.comp-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--text);
+}
+
+.comp-table tr:last-child td { border-bottom: none; }
+
+.comp-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+.comp-table .row-label {
+  font-weight: 600;
+  color: var(--text-head);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.comp-table .avx-col {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.tag-yes { color: var(--green); font-weight: 600; }
+.tag-no { color: var(--text-dim); }
+.tag-partial { color: var(--yellow); font-weight: 500; }
+
+/* ===== DISRUPTION MATRIX ===== */
+.matrix-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 1;
+  margin: 0 auto 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.matrix-axis-x, .matrix-axis-y {
+  position: absolute;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.matrix-axis-x {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.matrix-axis-y {
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%) rotate(-90deg);
+  white-space: nowrap;
+}
+
+.matrix-grid {
+  position: absolute;
+  inset: 50px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.matrix-quad {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  padding: 16px;
+  font-size: 10px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-dim);
+}
+
+.matrix-quad:nth-child(1) { background: rgba(168,85,247,0.06); }
+.matrix-quad:nth-child(2) { background: rgba(232,69,69,0.06); }
+.matrix-quad:nth-child(3) { background: rgba(255,255,255,0.01); }
+.matrix-quad:nth-child(4) { background: rgba(34,197,94,0.06); }
+
+.matrix-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s;
+}
+
+.matrix-dot:hover {
+  transform: translate(-50%, -50%) scale(1.8);
+  z-index: 20;
+}
+
+.matrix-dot-label {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  background: var(--surface3);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.matrix-dot:hover .matrix-dot-label { opacity: 1; }
+
+/* ===== DEEP DIVE BOXES ===== */
+.deep-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.deep-header {
+  padding: 20px 24px;
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.deep-header:hover { background: var(--surface2); }
+
+.deep-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.deep-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.deep-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-head);
+}
+
+.deep-header-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 1px;
+}
+
+.deep-chevron {
+  font-size: 16px;
+  color: var(--text-dim);
+  transition: transform 0.3s;
+}
+
+.deep-box.open .deep-chevron { transform: rotate(180deg); }
+
+.deep-body {
+  display: none;
+  padding: 24px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.deep-box.open .deep-body { display: block; }
+
+.deep-body p { margin-bottom: 12px; }
+.deep-body strong { color: var(--text-head); }
+
+.deep-body code {
+  background: var(--surface);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  border: 1px solid var(--border);
+}
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-dim);
+}
+
+.code-block .kw { color: var(--purple); }
+.code-block .str { color: var(--green); }
+.code-block .cmt { color: #444; font-style: italic; }
+.code-block .fn { color: var(--cyan); }
+
+/* ===== VERDICT BAR ===== */
+.verdict-bar {
+  margin-top: 48px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(232,69,69,0.04), rgba(0,210,255,0.04));
+}
+
+.verdict-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-head);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.verdict-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.verdict-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13.5px;
+}
+
+.verdict-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--red);
+  background: rgba(232,69,69,0.1);
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .header, .content, .nav-tabs { padding-left: 20px; padding-right: 20px; }
+  .stack-layer { grid-template-columns: 1fr; }
+  .stack-label { border-right: none; border-bottom: 1px solid var(--border); }
+  .co-grid { grid-template-columns: 1fr; }
+  .matrix-container { aspect-ratio: auto; min-height: 500px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="brand">
+    <div class="logo-mark">▲</div>
+    <h1>aviatrix<span>.tech</span></h1>
+  </div>
+  <div class="page-sub">Tech Stack Intelligence Report — February 2026</div>
+</div>
+
+<!-- NAV -->
+<div class="nav-tabs">
+  <div class="nav-tab active" data-tab="stack">Industry Stack</div>
+  <div class="nav-tab" data-tab="compare">Stack Comparison</div>
+  <div class="nav-tab" data-tab="challenges">Challenges</div>
+  <div class="nav-tab" data-tab="opportunities">Opportunities</div>
+  <div class="nav-tab" data-tab="disruption">Disruption Map</div>
+  <div class="nav-tab" data-tab="rec">Rec. Stack</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ===== TAB 1: INDUSTRY STACK ===== -->
+<div class="section active" id="stack">
+  <h2 class="section-title">Industry-Standard Tech Stack</h2>
+  <p class="section-desc">The current crash gaming infrastructure across Spribe (Aviator), Turbo Games, SmartSoft (JetX), and Pragmatic Play. Most providers converge on a remarkably similar architecture — which is both the norm and the vulnerability.</p>
+
+  <div class="legend">
+    <div class="legend-item"><span class="dot dot-std"></span> Industry standard</div>
+    <div class="legend-item"><span class="dot dot-new"></span> Emerging (2024–26)</div>
+    <div class="legend-item"><span class="dot dot-avx"></span> Aviatrix opportunity</div>
+    <div class="legend-item"><span class="dot dot-alt"></span> Alternative choice</div>
+  </div>
+
+  <div class="stack-diagram">
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--cyan)">Frontend</div>
+        <div class="stack-label-sub">Player-facing UI</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> React / Preact</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Canvas / WebGL</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> PixiJS / Phaser</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> Three.js (3D skins)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> GSAP animations</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Rive (interactive)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Tailwind / CSS-in-JS</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> Lottie micro-anims</div>
+      </div>
+    </div>
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--green)">Realtime Layer</div>
+        <div class="stack-label-sub">Multiplier sync & bets</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> WebSockets (ws/uws)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Socket.IO</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> gRPC-Web</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Redis Pub/Sub</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> NATS / Kafka Streams</div>
+        <div class="tech-chip"><span class="dot dot-alt"></span> SSE (fallback)</div>
+      </div>
+    </div>
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--orange)">Game Engine</div>
+        <div class="stack-label-sub">Core crash logic</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> Node.js / TypeScript</div>
+        <div class="tech-chip"><span class="dot dot-alt"></span> Go (high-perf)</div>
+        <div class="tech-chip"><span class="dot dot-alt"></span> Rust (new entrants)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Provably Fair RNG</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> SHA-256 / SHA-512</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> HMAC seed chaining</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Client seed injection</div>
+      </div>
+    </div>
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--purple)">Platform / API</div>
+        <div class="stack-label-sub">Operator integration</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> REST API (JSON)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> GCI / RGS protocol</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Seamless wallet API</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> OAuth 2.0 / JWT</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> GraphQL (backoffice)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Webhook event bus</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> iFrame embed</div>
+      </div>
+    </div>
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--pink)">Data / Storage</div>
+        <div class="stack-label-sub">State & analytics</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> PostgreSQL</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Redis (sessions/cache)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> MongoDB (game logs)</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> ClickHouse (analytics)</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> TimescaleDB</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Kafka (event log)</div>
+        <div class="tech-chip"><span class="dot dot-alt"></span> S3 / MinIO (replays)</div>
+      </div>
+    </div>
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--lime)">Infra / DevOps</div>
+        <div class="stack-label-sub">Deploy & scale</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> Docker / K8s</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> AWS / GCP</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> Cloudflare Workers</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Terraform / Pulumi</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> CI/CD (GitHub Actions)</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Prometheus + Grafana</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Edge compute (latency)</div>
+      </div>
+    </div>
+
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--yellow)">Compliance</div>
+        <div class="stack-label-sub">Regulatory tech</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-std"></span> GLI-certified RNG</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Responsible gaming API</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> GeoIP + KYC hooks</div>
+        <div class="tech-chip"><span class="dot dot-std"></span> Session time limits</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> AI affordability checks</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Per-jurisdiction config</div>
+        <div class="tech-chip"><span class="dot dot-new"></span> AML transaction scoring</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Deep dives -->
+  <div class="deep-box open">
+    <div class="deep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="deep-header-left">
+        <div class="deep-icon" style="background:rgba(0,210,255,0.1);color:var(--cyan)">🎲</div>
+        <div>
+          <div class="deep-header-title">Provably Fair — How It Actually Works</div>
+          <div class="deep-header-sub">The cryptographic backbone every crash game shares</div>
+        </div>
+      </div>
+      <div class="deep-chevron">▼</div>
+    </div>
+    <div class="deep-body">
+      <p>Every crash game in the market uses a variant of the same provably fair system. Here's the chain:</p>
+      <div class="code-block">
+<span class="cmt">// 1. Server generates seed before round</span>
+<span class="kw">const</span> serverSeed = <span class="fn">crypto.randomBytes</span>(<span class="str">32</span>).<span class="fn">toString</span>(<span class="str">'hex'</span>);
+<span class="kw">const</span> hashedSeed = <span class="fn">sha256</span>(serverSeed); <span class="cmt">// shown to players BEFORE round</span>
+
+<span class="cmt">// 2. Client seeds injected from first 3 bettors</span>
+<span class="kw">const</span> clientSeeds = [bettor1.seed, bettor2.seed, bettor3.seed];
+
+<span class="cmt">// 3. Combined hash → crash point</span>
+<span class="kw">const</span> combined = <span class="fn">sha512</span>(serverSeed + clientSeeds.<span class="fn">join</span>(<span class="str">''</span>));
+<span class="kw">const</span> crashPoint = <span class="fn">calculateMultiplier</span>(combined, houseEdge);
+
+<span class="cmt">// 4. After round: reveal serverSeed for verification</span>
+<span class="cmt">// Player can verify: sha256(serverSeed) === hashedSeed</span>
+      </div>
+      <p><strong>Key insight:</strong> Every provider (Spribe, Turbo, SmartSoft) uses this same fundamental pattern. The differentiation is zero at the RNG layer. Aviatrix's opportunity isn't in the fairness algorithm — it's in everything built <em>on top</em> of it.</p>
+      <p><strong>GLI certification note:</strong> The RNG module must be isolated, auditable, and certified independently. Novel social mechanics (Copy-Bet, Communal Shield) sit in the game logic layer <em>above</em> the RNG, which means they don't require re-certification of the core random engine — only separate regulatory review of the bonus/social mechanic.</p>
+    </div>
+  </div>
+
+  <div class="deep-box">
+    <div class="deep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="deep-header-left">
+        <div class="deep-icon" style="background:rgba(247,167,51,0.1);color:var(--orange)">⚡</div>
+        <div>
+          <div class="deep-header-title">Real-Time Architecture — The 100ms Rule</div>
+          <div class="deep-header-sub">Why WebSocket latency is the #1 technical constraint</div>
+        </div>
+      </div>
+      <div class="deep-chevron">▼</div>
+    </div>
+    <div class="deep-body">
+      <p>Crash games have the <strong>tightest real-time requirement</strong> of any casino game format. The multiplier updates 30–60 times per second for every connected player simultaneously. A player's cash-out must be processed, validated against the server-side crash point, and acknowledged — all within ~100ms end-to-end.</p>
+      <p>The industry standard approach: <code>WebSocket</code> connections over <code>ws</code> or <code>uws</code> (µWebSockets), with <code>Redis Pub/Sub</code> syncing game state across multiple backend instances. Most providers run a single "game room" per round — all players subscribe to the same channel and receive identical multiplier ticks.</p>
+      <p><strong>Where everyone is weak:</strong> No provider has solved the <em>social multiplayer</em> problem at scale. Adding Crews, voice chat, real-time leaderboards, and Copy-Bet means going from 1 channel per round to potentially hundreds of sub-channels — crew channels, spectator channels, tournament channels. This requires a fundamentally different pub/sub architecture. <code>NATS</code> or <code>Kafka Streams</code> with partition-per-crew would be the way to handle this without degrading the core 100ms guarantee.</p>
+      <p><strong>Aviatrix angle:</strong> Build the real-time layer for social from day one, not as a bolt-on. This is the single hardest technical moat to replicate.</p>
+    </div>
+  </div>
+
+  <div class="deep-box">
+    <div class="deep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="deep-header-left">
+        <div class="deep-icon" style="background:rgba(34,197,94,0.1);color:var(--green)">🔌</div>
+        <div>
+          <div class="deep-header-title">Operator Integration — GCI/RGS Protocol</div>
+          <div class="deep-header-sub">The API layer that makes or breaks B2B adoption</div>
+        </div>
+      </div>
+      <div class="deep-chevron">▼</div>
+    </div>
+    <div class="deep-body">
+      <p>Operators integrate crash games via the <strong>Game Communication Interface (GCI)</strong> or a <strong>Remote Game Server (RGS)</strong> protocol. The game runs on the provider's servers and communicates with the operator's wallet and player management system via standardized API calls.</p>
+      <p>Typical flow: <code>Player opens game → iFrame loads from provider CDN → Auth token validated → Wallet balance fetched → Bets/wins posted back via wallet API</code>.</p>
+      <p>Every operator has a slightly different wallet API variant, which means providers maintain <strong>adapter layers</strong> for each integration. The biggest friction in B2B crash gaming is not the game itself — it's the 2–6 week integration period per operator.</p>
+      <p><strong>Industry pain:</strong> No standardized "plug and play" exists. Each provider has proprietary protocols. Aggregators (SoftSwiss, EveryMatrix, SoftGamings) paper over this with unified APIs, but at the cost of added latency and revenue share.</p>
+      <p><strong>Aviatrix angle:</strong> Ship a single-endpoint integration SDK that wraps the 5 most common wallet API patterns. Target "1-day integration" for crypto operators and "1-week" for Tier-1 licensed operators. This directly solves Marcus Chen's (Tier-1 operator persona) top pain: <em>"Launch fast with minimal dev lift."</em></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 2: STACK COMPARISON ===== -->
+<div class="section" id="compare">
+  <h2 class="section-title">Tech Stack Comparison</h2>
+  <p class="section-desc">How the current crash gaming providers compare across key technical dimensions — and where the whitespace is.</p>
+
+  <div class="comp-table-wrap">
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>Spribe (Aviator)</th>
+          <th>Turbo Games</th>
+          <th>SmartSoft (JetX)</th>
+          <th class="avx-col">Aviatrix (Target)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="row-label">Core Language</td>
+          <td>Node.js</td>
+          <td>Node.js / Go</td>
+          <td>Node.js</td>
+          <td class="avx-col">Go + TypeScript</td>
+        </tr>
+        <tr>
+          <td class="row-label">Realtime Protocol</td>
+          <td>WebSocket (Socket.IO)</td>
+          <td>WebSocket (native ws)</td>
+          <td>WebSocket (Socket.IO)</td>
+          <td class="avx-col">uWebSockets + NATS</td>
+        </tr>
+        <tr>
+          <td class="row-label">Fairness System</td>
+          <td>Provably Fair (SHA-256/512)</td>
+          <td>Provably Fair</td>
+          <td>Certified RNG</td>
+          <td class="avx-col">Provably Fair + on-chain audit</td>
+        </tr>
+        <tr>
+          <td class="row-label">3D / Visual Engine</td>
+          <td>2D Canvas only</td>
+          <td>2D Canvas only</td>
+          <td>2D Canvas + minor 3D</td>
+          <td class="avx-col">Three.js + PixiJS hybrid</td>
+        </tr>
+        <tr>
+          <td class="row-label">Social Infrastructure</td>
+          <td class="tag-partial">Chat only</td>
+          <td class="tag-no">None</td>
+          <td class="tag-partial">Chat + leaderboard</td>
+          <td class="avx-col">Crews, voice, tournaments</td>
+        </tr>
+        <tr>
+          <td class="row-label">Progression System</td>
+          <td class="tag-no">None</td>
+          <td class="tag-no">None</td>
+          <td class="tag-no">None</td>
+          <td class="avx-col">Flight Pass + XP + seasons</td>
+        </tr>
+        <tr>
+          <td class="row-label">Cosmetic Economy</td>
+          <td class="tag-no">None</td>
+          <td class="tag-no">None</td>
+          <td class="tag-no">None</td>
+          <td class="avx-col">Plane skins, trails, hangars</td>
+        </tr>
+        <tr>
+          <td class="row-label">Copy-Bet / Social Bet</td>
+          <td class="tag-no">No</td>
+          <td class="tag-no">No</td>
+          <td class="tag-no">No</td>
+          <td class="avx-col">Copy-Bet + Side Bets</td>
+        </tr>
+        <tr>
+          <td class="row-label">Multi-mode (Survivor etc.)</td>
+          <td class="tag-no">Single mode</td>
+          <td class="tag-no">Single mode</td>
+          <td class="tag-partial">2 modes</td>
+          <td class="avx-col">Classic / Survivor / Tournament</td>
+        </tr>
+        <tr>
+          <td class="row-label">Telegram Mini App</td>
+          <td class="tag-no">No</td>
+          <td class="tag-no">No</td>
+          <td class="tag-no">No</td>
+          <td class="avx-col">Native TMA integration</td>
+        </tr>
+        <tr>
+          <td class="row-label">Integration Time</td>
+          <td>2–4 weeks</td>
+          <td>2–3 weeks</td>
+          <td>2–4 weeks</td>
+          <td class="avx-col">1 day (crypto) / 1 week (Tier-1)</td>
+        </tr>
+        <tr>
+          <td class="row-label">Analytics Dashboard</td>
+          <td class="tag-partial">Basic</td>
+          <td class="tag-partial">Basic</td>
+          <td class="tag-partial">Basic</td>
+          <td class="avx-col">Real-time + predictive</td>
+        </tr>
+        <tr>
+          <td class="row-label">Edge Deployment</td>
+          <td class="tag-no">Central only</td>
+          <td class="tag-no">Central only</td>
+          <td class="tag-no">Central only</td>
+          <td class="avx-col">CDN + edge auth</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="verdict-bar">
+    <div class="verdict-title">⚡ Key Takeaway</div>
+    <div class="verdict-items">
+      <div class="verdict-item">
+        <div class="verdict-num">1</div>
+        <div>Every competitor uses essentially the <strong>same tech stack</strong> — Node.js + Socket.IO + 2D Canvas + basic provably fair. Zero differentiation at the infrastructure level.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">2</div>
+        <div><strong>No one</strong> has built social infrastructure, progression systems, or cosmetic economies. This is 100% greenfield — technically and competitively.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">3</div>
+        <div>Operator integration is a pain everywhere. A <strong>1-day SDK</strong> would be a category-defining competitive advantage in the B2B sales cycle.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">4</div>
+        <div>The visual presentation of every crash game is stuck in <strong>2018</strong>. 3D plane skins, dynamic trails, and Rive animations would be a generation leap in perceived quality.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 3: CHALLENGES ===== -->
+<div class="section" id="challenges">
+  <h2 class="section-title">Technical Challenges</h2>
+  <p class="section-desc">The hard problems Aviatrix must solve — where most crash game startups stall or fail.</p>
+
+  <div class="co-grid">
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ Critical • Architecture</div>
+      <div class="co-title">Real-Time Social at Scale</div>
+      <div class="co-desc">Adding Crews, Copy-Bet, and Survivor lobbies turns a simple 1-channel-per-round system into a complex multi-topology pub/sub. Each Crew needs its own state channel, Copy-Bet needs sub-100ms relay, and Survivor needs round-aware elimination logic. All concurrent. All under the 100ms ceiling.</div>
+      <div class="co-impact"><strong>Risk:</strong> Architectural misstep here = latency spikes at scale = player rage = operator churn</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ Critical • Regulatory</div>
+      <div class="co-title">GLI Certification of Novel Mechanics</div>
+      <div class="co-desc">Copy-Bet, Communal Shield, and Side Bets have no regulatory precedent in crash gaming. GLI/BMM testing labs need to evaluate these as new game categories. Expect 6–12 months of back-and-forth with testing houses, plus separate submissions per jurisdiction (MGA, UKGC, Curaçao).</div>
+      <div class="co-impact"><strong>Risk:</strong> Regulatory delay = missed market window. Must decouple certified core from social features that can ship earlier in less regulated markets.</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ High • Security</div>
+      <div class="co-title">Copy-Bet Exploitation Vectors</div>
+      <div class="co-desc">Copy-Bet creates a new attack surface: colluding accounts could create "guaranteed win" illusions, bot networks could copy high-rollers to amplify exposure, and latency differences between copier/source could create arbitrage. Need rate-limiting, behavioral analysis, and maximum copy-ratio caps built into the protocol layer.</div>
+      <div class="co-impact"><strong>Risk:</strong> Single exploit going viral on Twitter = catastrophic trust loss</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ High • Performance</div>
+      <div class="co-title">3D Rendering on Low-End Devices</div>
+      <div class="co-desc">Aviatrix targets markets (Africa, India, LatAm) where the median device is a $120 Android phone with 3GB RAM. Three.js plane skins + particle trails + smooth 60fps multiplier animation must degrade gracefully. Needs a multi-tier rendering pipeline: 3D (high-end) → 2.5D (mid) → 2D sprite (low).</div>
+      <div class="co-impact"><strong>Risk:</strong> Beautiful on desktop, unplayable on target audience devices</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ High • Data</div>
+      <div class="co-title">Event Sourcing at iGaming Scale</div>
+      <div class="co-desc">Every bet, cash-out, crew action, and skin purchase must be an immutable, auditable event. At 10K concurrent players × 30 rounds/minute, that's ~300K events/minute. The event store must be append-only, replayable, and queryable in real-time for compliance reporting.</div>
+      <div class="co-impact"><strong>Risk:</strong> Under-engineered event pipeline = compliance failure = license revocation</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ Medium • Integration</div>
+      <div class="co-title">Multi-Wallet Abstraction Layer</div>
+      <div class="co-desc">Must simultaneously support fiat (via operator wallet APIs), crypto (direct on-chain), and internal "fun money" for demo/tournament modes. Each has different settlement speeds, error modes, and audit requirements. The wallet abstraction must be airtight — a bug here is a financial bug.</div>
+      <div class="co-impact"><strong>Risk:</strong> Wallet bugs are existential. Double-spends, phantom balances, or settlement mismatches destroy operator trust instantly.</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ Medium • Ops</div>
+      <div class="co-title">Multi-Region Compliance Partitioning</div>
+      <div class="co-desc">Different jurisdictions require data residency (EU: GDPR, UK: UKGC rules), different RTP floors, different responsible gaming features, and different KYC flows. The platform must partition at the config layer without forking the codebase. Feature flags per jurisdiction, not per codebase.</div>
+      <div class="co-impact"><strong>Risk:</strong> Codebase forks = maintenance nightmare. Feature flag debt = bugs in production for specific markets.</div>
+    </div>
+
+    <div class="co-card challenge">
+      <div class="co-badge">⚠ Medium • Product</div>
+      <div class="co-title">Skin Economy Without Blockchain Dependency</div>
+      <div class="co-desc">Plane skins need to feel ownable and tradeable without forcing every operator into Web3 infrastructure. Need a dual-track system: off-chain inventory for regulated markets + optional on-chain NFT bridge for crypto operators. Two economies, one asset catalog, seamless cross-mode experience.</div>
+      <div class="co-impact"><strong>Risk:</strong> Over-indexing on crypto scares Tier-1 operators. Ignoring crypto loses the fast-growth market.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB 4: OPPORTUNITIES ===== -->
+<div class="section" id="opportunities">
+  <h2 class="section-title">Technical Opportunities</h2>
+  <p class="section-desc">Whitespace in the tech landscape where Aviatrix can build lasting competitive moats.</p>
+
+  <div class="co-grid">
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ Massive • Moat</div>
+      <div class="co-title">Social Graph as Infrastructure</div>
+      <div class="co-desc">No crash game has a social layer. Building Crews, friend lists, follow graphs, and crew-vs-crew history creates a data asset that compounds over time. Every relationship in the social graph is a retention hook and a switching cost. This isn't a feature — it's a platform play.</div>
+      <div class="co-impact"><strong>Moat strength:</strong> Networks effects are the strongest moat in tech. Once players have their crew on Aviatrix, they won't leave.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ Massive • Revenue</div>
+      <div class="co-title">LiveOps Engine (Seasons + Events)</div>
+      <div class="co-desc">Build a server-driven LiveOps system that can push new missions, challenges, seasonal themes, limited-time modes, and tournament brackets — all without client updates. Fortnite's entire retention engine is LiveOps. No crash game has any version of this.</div>
+      <div class="co-impact"><strong>Revenue impact:</strong> Flight Pass + seasonal skins = recurring non-wagering revenue stream that doesn't touch RTP or house edge.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ High • Distribution</div>
+      <div class="co-title">Telegram Mini App — Native TMA</div>
+      <div class="co-desc">Telegram's Bot API + Mini App framework lets you ship a fully playable crash game inside Telegram with zero app store friction. Hamster Kombat proved 300M+ users are reachable this way. First crash game on TMA gets the entire crypto-native Telegram audience. The tech is straightforward (Web App bridge + TON wallet), the timing is everything.</div>
+      <div class="co-impact"><strong>Distribution:</strong> Zero-CAC acquisition channel. Viral coefficient multiplied by group chat dynamics.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ High • Differentiation</div>
+      <div class="co-title">Crash Clips — Shareable Replay System</div>
+      <div class="co-desc">Record and auto-generate short video clips of big wins, clutch cash-outs, and crew moments. Technically: capture the event log + render a client-side replay with the player's skin, multiplier animation, and crew reactions. Output as shareable MP4/GIF with operator branding watermarked. This is free UA content.</div>
+      <div class="co-impact"><strong>Viral loop:</strong> Player shares clip → friend sees branded Aviatrix game → friend joins operator. Content-driven acquisition without ad spend.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ High • Speed</div>
+      <div class="co-title">1-Day Integration SDK</div>
+      <div class="co-desc">Package the operator integration as a single npm/pip package with pre-built adapters for the top 10 wallet API patterns (SoftSwiss, EveryMatrix, Salsa, BetConstruct, etc.). Include a local emulator for testing without a live wallet connection. Ship it with OpenAPI spec and Postman collection.</div>
+      <div class="co-impact"><strong>Sales accelerator:</strong> "Try our game in 4 hours, go live in 24" would be unprecedented in the industry.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ High • Intelligence</div>
+      <div class="co-title">AI-Powered Operator Dashboard</div>
+      <div class="co-desc">Most crash game back-offices show basic GGR and round counts. Build a real-time analytics dashboard with predictive churn alerts, player segment clustering, optimal RTP tuning per market, and anomaly detection for fraud/bot activity. Use the social graph data (crew engagement, Copy-Bet patterns) as unique signals no competitor has access to.</div>
+      <div class="co-impact"><strong>B2B stickiness:</strong> Operators stay for the intelligence, not just the game. Data lock-in.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ Medium • Experience</div>
+      <div class="co-title">WebRTC Crew Voice Chat</div>
+      <div class="co-desc">Lightweight push-to-talk voice within Crews during rounds. The screaming-at-2x-multiplier moment is inherently viral content. Tech: WebRTC peer connections within crew (max 5–8 players), server-mediated signaling, optional recording for Crash Clips integration.</div>
+      <div class="co-impact"><strong>Engagement:</strong> Voice transforms gambling from solitary dopamine hit to shared social experience. Completely new category feel.</div>
+    </div>
+
+    <div class="co-card opportunity">
+      <div class="co-badge">★ Medium • Positioning</div>
+      <div class="co-title">Edge-First Architecture</div>
+      <div class="co-desc">Deploy game state computation on Cloudflare Workers / Durable Objects or AWS Lambda@Edge. Reduces round-trip latency for Africa/LatAm/SEA markets from ~200ms to ~30ms. Also enables per-region data residency compliance automatically. No competitor currently uses edge compute.</div>
+      <div class="co-impact"><strong>Technical moat:</strong> Lower latency = fairer cash-out timing = measurably better player experience in key growth markets.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB 5: DISRUPTION MAP ===== -->
+<div class="section" id="disruption">
+  <h2 class="section-title">Disruption Map</h2>
+  <p class="section-desc">Where each technical innovation sits on the disruption potential vs. implementation difficulty matrix. Hover over dots for details.</p>
+
+  <div class="matrix-container">
+    <div class="matrix-axis-x">Implementation Difficulty →</div>
+    <div class="matrix-axis-y">Disruption Potential →</div>
+
+    <div class="matrix-grid">
+      <div class="matrix-quad">Hard + High Disruption<br><small style="color:var(--purple)">"Moon shots"</small></div>
+      <div class="matrix-quad">Easy + High Disruption<br><small style="color:var(--red)">"Do these FIRST"</small></div>
+      <div class="matrix-quad">Hard + Low Disruption<br><small style="color:var(--text-dim)">"Avoid"</small></div>
+      <div class="matrix-quad">Easy + Low Disruption<br><small style="color:var(--green)">"Quick wins"</small></div>
+    </div>
+
+    <!-- Dots positioned in matrix: left% = difficulty (inverted), top% = disruption (inverted) -->
+    <!-- TOP RIGHT = Easy + High disruption -->
+    <div class="matrix-dot" style="left:78%;top:14%;background:var(--red)"><div class="matrix-dot-label">Telegram Mini App</div></div>
+    <div class="matrix-dot" style="left:72%;top:18%;background:var(--red)"><div class="matrix-dot-label">Crash Clips</div></div>
+    <div class="matrix-dot" style="left:82%;top:22%;background:var(--red)"><div class="matrix-dot-label">Flight Pass / Seasons</div></div>
+    <div class="matrix-dot" style="left:68%;top:26%;background:var(--orange)"><div class="matrix-dot-label">1-Day Integration SDK</div></div>
+
+    <!-- TOP LEFT = Hard + High disruption -->
+    <div class="matrix-dot" style="left:22%;top:12%;background:var(--purple)"><div class="matrix-dot-label">Social Graph Infrastructure</div></div>
+    <div class="matrix-dot" style="left:30%;top:20%;background:var(--purple)"><div class="matrix-dot-label">LiveOps Engine</div></div>
+    <div class="matrix-dot" style="left:18%;top:24%;background:var(--purple)"><div class="matrix-dot-label">Real-time Social at Scale</div></div>
+    <div class="matrix-dot" style="left:35%;top:16%;background:var(--purple)"><div class="matrix-dot-label">AI Operator Dashboard</div></div>
+
+    <!-- BOTTOM RIGHT = Easy + Low disruption -->
+    <div class="matrix-dot" style="left:75%;top:72%;background:var(--green)"><div class="matrix-dot-label">Lottie Animations</div></div>
+    <div class="matrix-dot" style="left:82%;top:68%;background:var(--green)"><div class="matrix-dot-label">Dark Mode UI Polish</div></div>
+    <div class="matrix-dot" style="left:70%;top:78%;background:var(--green)"><div class="matrix-dot-label">Chat Enhancements</div></div>
+
+    <!-- MIDDLE AREA -->
+    <div class="matrix-dot" style="left:45%;top:30%;background:var(--cyan)"><div class="matrix-dot-label">3D Plane Skins</div></div>
+    <div class="matrix-dot" style="left:40%;top:40%;background:var(--cyan)"><div class="matrix-dot-label">WebRTC Voice Chat</div></div>
+    <div class="matrix-dot" style="left:55%;top:35%;background:var(--cyan)"><div class="matrix-dot-label">Copy-Bet System</div></div>
+    <div class="matrix-dot" style="left:30%;top:45%;background:var(--cyan)"><div class="matrix-dot-label">Edge Compute Deploy</div></div>
+    <div class="matrix-dot" style="left:50%;top:50%;background:var(--cyan)"><div class="matrix-dot-label">Communal Shield</div></div>
+    <div class="matrix-dot" style="left:25%;top:55%;background:var(--text-dim)"><div class="matrix-dot-label">Blockchain Skin Bridge</div></div>
+    <div class="matrix-dot" style="left:20%;top:65%;background:var(--text-dim)"><div class="matrix-dot-label">On-chain Full Audit</div></div>
+
+  </div>
+
+  <div class="verdict-bar">
+    <div class="verdict-title">🎯 Priority Sequence</div>
+    <div class="verdict-items">
+      <div class="verdict-item">
+        <div class="verdict-num">1</div>
+        <div><strong>Phase 1 (Month 1–3):</strong> Telegram Mini App, Flight Pass skeleton, Crash Clips, 1-Day SDK. High disruption, fast to ship. These land before anyone reacts.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">2</div>
+        <div><strong>Phase 2 (Month 3–6):</strong> Copy-Bet, 3D skins, Communal Shield, AI dashboard MVP. Medium complexity, huge differentiation. Core feature set that makes the pitch deck irrefutable.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">3</div>
+        <div><strong>Phase 3 (Month 6–12):</strong> Social Graph infrastructure, LiveOps engine, WebRTC voice, edge compute. These are the <em>moats</em>. Hard to build, harder to copy.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">4</div>
+        <div><strong>Phase 4 (12+):</strong> Blockchain skin bridge, full on-chain audit trail. Only after the core social platform is proven. Don't over-engineer crypto before product-market fit.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 6: RECOMMENDED STACK ===== -->
+<div class="section" id="rec">
+  <h2 class="section-title">Recommended Aviatrix Stack</h2>
+  <p class="section-desc">An opinionated stack built for Aviatrix's specific needs: real-time social crash gaming, multi-jurisdiction compliance, and lightning-fast operator integration.</p>
+
+  <div class="stack-diagram">
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--cyan)">Frontend</div>
+        <div class="stack-label-sub">Player client</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> React 19 + TypeScript</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> PixiJS 8 (2D core)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Three.js (3D skins, opt-in)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Rive (interactive UI anims)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Zustand (state mgmt)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Vite (build)</div>
+      </div>
+    </div>
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--green)">Realtime</div>
+        <div class="stack-label-sub">Multiplayer sync</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> µWebSockets (uws)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> NATS JetStream</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Redis 7 (cache + pub/sub)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> WebRTC (voice, optional)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Protocol Buffers (wire format)</div>
+      </div>
+    </div>
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--orange)">Game Engine</div>
+        <div class="stack-label-sub">Core logic</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> Go 1.23 (game server)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> TypeScript (API + social)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Provably Fair (SHA-512)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Isolated RNG module</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Round state machine</div>
+      </div>
+    </div>
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--purple)">Platform</div>
+        <div class="stack-label-sub">APIs & integration</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> NestJS (API gateway)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> GraphQL (backoffice)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> REST + OpenAPI 3.1</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Wallet adapter SDK</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Webhook event bus</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Telegram Bot API</div>
+      </div>
+    </div>
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--pink)">Data</div>
+        <div class="stack-label-sub">Storage & analytics</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> PostgreSQL 16 (core)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> ClickHouse (analytics)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Redis 7 (sessions)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> NATS JetStream (event log)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> S3 (replays + clips)</div>
+      </div>
+    </div>
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--lime)">Infra</div>
+        <div class="stack-label-sub">Deploy & observe</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> Kubernetes (EKS/GKE)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Cloudflare (CDN + edge)</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Terraform</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> GitHub Actions CI/CD</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Grafana + Loki + Tempo</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Feature flags (Unleash)</div>
+      </div>
+    </div>
+    <div class="stack-layer">
+      <div class="stack-label">
+        <div class="stack-label-name" style="color:var(--yellow)">Compliance</div>
+        <div class="stack-label-sub">Regulatory</div>
+      </div>
+      <div class="stack-techs">
+        <div class="tech-chip"><span class="dot dot-avx"></span> GLI-certified RNG module</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Per-jurisdiction config engine</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Responsible gaming SDK</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> GeoIP + KYC adapter</div>
+        <div class="tech-chip"><span class="dot dot-avx"></span> Immutable audit trail</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="deep-box">
+    <div class="deep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="deep-header-left">
+        <div class="deep-icon" style="background:rgba(232,69,69,0.1);color:var(--red)">🏗</div>
+        <div>
+          <div class="deep-header-title">Why Go + TypeScript (Not Just Node.js)</div>
+          <div class="deep-header-sub">The architectural decision that matters most</div>
+        </div>
+      </div>
+      <div class="deep-chevron">▼</div>
+    </div>
+    <div class="deep-body">
+      <p><strong>Go for the game server</strong> — the core round engine, multiplier computation, and cash-out validation. Go's goroutines handle 100K+ concurrent WebSocket connections with sub-millisecond GC pauses. Node.js's event loop can bottleneck under the sustained throughput of a popular crash game at scale. Go's type safety also reduces the surface area for financial bugs.</p>
+      <p><strong>TypeScript (NestJS) for everything else</strong> — API gateway, social graph, LiveOps engine, operator dashboard, Telegram bot. These are CRUD-heavy, integration-heavy services where Node.js/TypeScript's ecosystem is unmatched. NestJS gives you dependency injection, guards, and module patterns that keep a multi-team codebase clean.</p>
+      <p><strong>The boundary:</strong> Go handles the "hot path" (multiplier tick → cash-out → wallet debit) and TypeScript handles the "warm path" (friend requests, skin inventory, tournament brackets, analytics ingestion). They communicate via NATS JetStream — async, durable, and partition-tolerant.</p>
+      <p>This split lets you hire differently too: game engine engineers (Go/Rust background, financial systems experience) vs. product engineers (TypeScript/React, social/consumer app experience). Two different talent pools, both essential.</p>
+    </div>
+  </div>
+
+  <div class="deep-box">
+    <div class="deep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="deep-header-left">
+        <div class="deep-icon" style="background:rgba(0,210,255,0.1);color:var(--cyan)">📊</div>
+        <div>
+          <div class="deep-header-title">Team Size & Hiring Roadmap</div>
+          <div class="deep-header-sub">Minimum viable team to execute this stack</div>
+        </div>
+      </div>
+      <div class="deep-chevron">▼</div>
+    </div>
+    <div class="deep-body">
+      <p><strong>Phase 1 team (5–7 engineers):</strong></p>
+      <p>1× <strong>Game Engine Lead</strong> (Go, real-time systems, financial correctness) — this is the hardest hire and the most critical. Look for ex-fintech, ex-trading systems, or ex-multiplayer game server engineers.</p>
+      <p>2× <strong>Frontend Engineers</strong> (React + PixiJS/Canvas, one senior) — responsible for the client, rendering pipeline, and the adaptive quality system for low-end devices.</p>
+      <p>1× <strong>Platform/API Engineer</strong> (TypeScript/NestJS) — builds the operator SDK, wallet adapter layer, and integration pipeline.</p>
+      <p>1× <strong>DevOps/SRE</strong> (K8s, Terraform, monitoring) — critical from day one. Crash games have zero tolerance for downtime.</p>
+      <p>0.5× <strong>Security Engineer</strong> (can be fractional/consultant) — RNG audit, penetration testing, Copy-Bet exploit analysis.</p>
+      <p><strong>Phase 2 additions (+3–5):</strong> Social backend engineer, data/analytics engineer, mobile specialist (Telegram TMA + responsive), QA automation engineer.</p>
+      <p><strong>Phase 3 additions (+2–3):</strong> ML engineer (fraud detection, player segmentation), compliance/regulatory tech engineer, additional frontend for LiveOps tools.</p>
+    </div>
+  </div>
+
+  <div class="verdict-bar">
+    <div class="verdict-title">🔑 The 5 Technical Bets That Define Aviatrix</div>
+    <div class="verdict-items">
+      <div class="verdict-item">
+        <div class="verdict-num">1</div>
+        <div><strong>Go game server</strong> — 10x throughput headroom over Node.js competitors at the same infrastructure cost. The hot path must be fast and correct.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">2</div>
+        <div><strong>NATS over Redis-only</strong> — purpose-built for the multi-channel social topology (Crews, tournaments, Copy-Bet). Redis alone can't partition per-crew at scale.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">3</div>
+        <div><strong>Adaptive rendering pipeline</strong> — auto-detect device capability and serve 3D/2.5D/2D accordingly. Win on $120 phones, dazzle on desktops.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">4</div>
+        <div><strong>Feature flags per jurisdiction</strong> — single codebase, infinite market configurations. Ship Copy-Bet in Curaçao while it's still in GLI review for MGA.</div>
+      </div>
+      <div class="verdict-item">
+        <div class="verdict-num">5</div>
+        <div><strong>Crash Clips as a first-class system</strong> — event-log replay → client-side render → shareable MP4. Turns every big win into a UA asset.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Tab navigation
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
