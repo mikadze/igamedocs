@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { gameConfigProvider, GAME_CONFIG } from './env-config.provider';
+import {
+  validatedEnvProvider,
+  gameConfigProvider,
+  natsTopicsProvider,
+  GAME_CONFIG,
+} from './env-config.provider';
 
 @Module({
   imports: [
@@ -8,7 +13,7 @@ import { gameConfigProvider, GAME_CONFIG } from './env-config.provider';
       envFilePath: ['.env.local', '.env'],
     }),
   ],
-  providers: [gameConfigProvider],
-  exports: [GAME_CONFIG],
+  providers: [validatedEnvProvider, gameConfigProvider, natsTopicsProvider],
+  exports: [GAME_CONFIG, 'NATS_TOPICS'],
 })
 export class GameConfigModule {}

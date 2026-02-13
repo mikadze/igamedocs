@@ -85,10 +85,7 @@ describe('PlaceBetUseCase', () => {
   });
 
   it('returns the snapshot with correct properties', async () => {
-    const result = await useCase.execute(
-      makeCommand({ amountCents: 2000 }),
-      round,
-    );
+    const result = await useCase.execute(makeCommand({ amountCents: 2000 }), round);
 
     expect(result.success).toBe(true);
     if (result.success) {

@@ -17,23 +17,23 @@ export interface GameTopics {
   readonly BET_LOST: string;
   readonly BET_REJECTED: string;
   readonly CREDIT_FAILED: string;
+  readonly CMD_PLACE_BET: string;
+  readonly CMD_CASHOUT: string;
 }
 
 /**
  * Creates operator-scoped NATS topic constants.
- * Call once at boot with the operator ID from the environment.
+ * Call once at boot with the validated operator ID from {@link GameConfig}.
+ *
+ * @param operatorId  Pre-validated lowercase slug from the environment.
  *
  * @example
  * const TOPICS = createTopics('operator-a');
  * // TOPICS.ROUND_NEW === 'game.operator-a.round.new'
  */
 export function createTopics(operatorId: string): GameTopics {
-  if (!/^[\w-]+$/.test(operatorId)) {
-    throw new Error(`Invalid operatorId for NATS topics: "${operatorId}"`);
-  }
-
   const prefix = `game.${operatorId}`;
-  
+
   return Object.freeze({
     ROUND_NEW: `${prefix}.round.new`,
     ROUND_BETTING: `${prefix}.round.betting`,
@@ -45,5 +45,7 @@ export function createTopics(operatorId: string): GameTopics {
     BET_LOST: `${prefix}.bet.lost`,
     BET_REJECTED: `${prefix}.bet.rejected`,
     CREDIT_FAILED: `${prefix}.credit.failed`,
+    CMD_PLACE_BET: `${prefix}.cmd.place-bet`,
+    CMD_CASHOUT: `${prefix}.cmd.cashout`,
   });
 }

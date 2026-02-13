@@ -29,14 +29,13 @@ describe('createTopics', () => {
     expect(topics.CREDIT_FAILED).toBe('game.op-123.credit.failed');
   });
 
-  it('returns a frozen object', () => {
-    expect(Object.isFrozen(topics)).toBe(true);
+  it('prefixes command topics with game.{operatorId}.cmd.*', () => {
+    expect(topics.CMD_PLACE_BET).toBe('game.op-123.cmd.place-bet');
+    expect(topics.CMD_CASHOUT).toBe('game.op-123.cmd.cashout');
   });
 
-  it('throws on operatorId with NATS special characters', () => {
-    expect(() => createTopics('a.b')).toThrow('Invalid operatorId');
-    expect(() => createTopics('a*')).toThrow('Invalid operatorId');
-    expect(() => createTopics('a>')).toThrow('Invalid operatorId');
+  it('returns a frozen object', () => {
+    expect(Object.isFrozen(topics)).toBe(true);
   });
 
   it('produces distinct prefixes for different operator IDs', () => {

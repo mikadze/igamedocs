@@ -108,6 +108,7 @@ describe('RunGameLoopUseCase', () => {
       onCashout: jest.fn((handler) => {
         cashoutHandler = handler;
       }),
+      close: jest.fn(async () => {}),
     };
 
     tickScheduler = {
@@ -154,7 +155,13 @@ describe('RunGameLoopUseCase', () => {
       addBatch: jest.fn(),
     };
     logger = { warn: jest.fn(), error: jest.fn() };
-    placeBetUseCase = new PlaceBetUseCase(config, walletGateway, betStore, failedCreditStore, logger);
+    placeBetUseCase = new PlaceBetUseCase(
+      config,
+      walletGateway,
+      betStore,
+      failedCreditStore,
+      logger,
+    );
     cashoutUseCase = new CashoutUseCase(walletGateway, failedCreditStore, eventPublisher);
     currentRoundStore = new InMemoryCurrentRoundStore();
     getRoundStateUseCase = new GetRoundStateUseCase(currentRoundStore);
@@ -191,16 +198,15 @@ describe('RunGameLoopUseCase', () => {
   }
 
   function allBatchedEvents(): GameEvent[] {
-    return (eventPublisher.publishBatch as jest.Mock).mock.calls
-      .flatMap(([events]: [GameEvent[]]) => events);
+    return (eventPublisher.publishBatch as jest.Mock).mock.calls.flatMap(
+      ([events]: [GameEvent[]]) => events,
+    );
   }
 
   function batchedEventsOfType<T extends GameEvent['type']>(
     type: T,
   ): Extract<GameEvent, { type: T }>[] {
-    return allBatchedEvents().filter(
-      (e): e is Extract<GameEvent, { type: T }> => e.type === type,
-    );
+    return allBatchedEvents().filter((e): e is Extract<GameEvent, { type: T }> => e.type === type);
   }
 
   describe('start and stop', () => {
@@ -739,9 +745,7 @@ describe('RunGameLoopUseCase', () => {
       const betId = Array.from(storedBets.keys())[0];
 
       // Mock credit to reject AFTER bet placement
-      (walletGateway.credit as jest.Mock).mockRejectedValue(
-        new Error('network error'),
-      );
+      (walletGateway.credit as jest.Mock).mockRejectedValue(new Error('network error'));
 
       // Queue cashout and process in a single tick
       cashoutHandler!({ playerId: 'player-1', roundId, betId });
@@ -1021,7 +1025,10 @@ describe('RunGameLoopUseCase', () => {
     it('drain() resolves when all tracked promises settle', async () => {
       let resolveBatchPromise!: () => void;
       (eventPublisher.publishBatch as jest.Mock).mockImplementation(
-        () => new Promise<void>((resolve) => { resolveBatchPromise = resolve; }),
+        () =>
+          new Promise<void>((resolve) => {
+            resolveBatchPromise = resolve;
+          }),
       );
 
       await useCase.start();

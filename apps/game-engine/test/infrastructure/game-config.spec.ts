@@ -1,6 +1,7 @@
 import { gameConfigSchema } from '@config/game-config.schema';
 
 const validEnv = {
+  OPERATOR_ID: 'operator-a',
   HOUSE_EDGE_PERCENT: '4',
   MIN_BET_CENTS: '10',
   MAX_BET_CENTS: '100000',
@@ -13,6 +14,7 @@ describe('gameConfigSchema', () => {
     const result = gameConfigSchema.safeParse(validEnv);
     expect(result.success).toBe(true);
     if (result.success) {
+      expect(result.data.OPERATOR_ID).toBe('operator-a');
       expect(result.data.HOUSE_EDGE_PERCENT).toBe(4);
       expect(result.data.MIN_BET_CENTS).toBe(10);
       expect(result.data.MAX_BET_CENTS).toBe(100000);
@@ -92,5 +94,38 @@ describe('gameConfigSchema', () => {
       GROWTH_RATE: '-0.5',
     });
     expect(result.success).toBe(false);
+  });
+
+  describe('OPERATOR_ID validation', () => {
+    it('accepts a valid lowercase slug', () => {
+      const result = gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'acme-gaming' });
+      expect(result.success).toBe(true);
+    });
+
+    it('rejects NATS special characters (dot, wildcard, gt)', () => {
+      expect(gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'a.b' }).success).toBe(false);
+      expect(gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'a*' }).success).toBe(false);
+      expect(gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'a>' }).success).toBe(false);
+    });
+
+    it('rejects uppercase characters', () => {
+      const result = gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'Operator-A' });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects strings shorter than 3 characters', () => {
+      const result = gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'ab' });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects trailing hyphen', () => {
+      const result = gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: 'operator-' });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects empty string', () => {
+      const result = gameConfigSchema.safeParse({ ...validEnv, OPERATOR_ID: '' });
+      expect(result.success).toBe(false);
+    });
   });
 });

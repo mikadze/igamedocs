@@ -1,17 +1,8 @@
-export interface PlaceBetRequest {
-  playerId: string;
-  roundId: string;
-  amountCents: number;
-  autoCashout?: number;
-}
-
-export interface CashoutRequest {
-  playerId: string;
-  roundId: string;
-  betId: string;
-}
+import { PlaceBetCommand } from '@betting/application/commands/PlaceBetCommand';
+import { CashoutCommand } from '@betting/application/commands/CashoutCommand';
 
 export interface EventSubscriber {
-  onPlaceBet(handler: (cmd: PlaceBetRequest) => void): void;
-  onCashout(handler: (cmd: CashoutRequest) => void): void;
+  onPlaceBet(handler: (cmd: PlaceBetCommand) => void): void;
+  onCashout(handler: (cmd: CashoutCommand) => void): void;
+  close(): Promise<void>;
 }
