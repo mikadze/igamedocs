@@ -1,5 +1,7 @@
+import { BetSnapshot } from '@shared/kernel/BetSnapshot';
+
 export type PlaceBetResult =
-  | { success: true; betId: string }
+  | { success: true; snapshot: BetSnapshot }
   | {
       success: false;
       error:
@@ -7,5 +9,6 @@ export type PlaceBetResult =
         | 'ABOVE_MAX_BET'
         | 'INSUFFICIENT_FUNDS'
         | 'PLAYER_BLOCKED'
-        | 'WALLET_TIMEOUT';
+        | 'WALLET_TIMEOUT'
+        | 'ROUND_NOT_BETTING';
     };

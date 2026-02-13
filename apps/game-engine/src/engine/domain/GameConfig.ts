@@ -4,4 +4,5 @@ export interface GameConfig {
   maxBetCents: number;
   bettingWindowMs: number;
   tickIntervalMs: number;
+  growthRate?: number;
 }

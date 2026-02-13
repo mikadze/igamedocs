@@ -8,6 +8,10 @@ export class Multiplier {
     return new Multiplier(value);
   }
 
+  static valueAt(elapsedMs: number, growthRate: number = DEFAULT_GROWTH_RATE): number {
+    return Math.exp(growthRate * elapsedMs);
+  }
+
   toDisplay(): string {
     return this.value.toFixed(2);
   }

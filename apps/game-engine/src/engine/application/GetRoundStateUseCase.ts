@@ -1,6 +1,7 @@
-import { Round } from '@engine/domain/Round';
 import { RoundState } from '@engine/domain/RoundState';
-import { BetSnapshot, toBetSnapshot } from '@engine/application/ports/EventPublisher';
+import { BetSnapshot } from '@shared/kernel/BetSnapshot';
+import { toBetSnapshot } from '@betting/application/mappers/toBetSnapshot';
+import { CurrentRoundStore } from '@engine/application/ports/CurrentRoundStore';
 
 export interface RoundSnapshot {
   roundId: string;
@@ -11,23 +12,20 @@ export interface RoundSnapshot {
 }
 
 export class GetRoundStateUseCase {
-  private currentRound: Round | null = null;
-
-  setCurrentRound(round: Round | null): void {
-    this.currentRound = round;
-  }
+  constructor(private readonly currentRoundStore: CurrentRoundStore) {}
 
   execute(): RoundSnapshot | null {
-    if (!this.currentRound) {
+    const currentRound = this.currentRoundStore.get();
+    if (!currentRound) {
       return null;
     }
 
     return {
-      roundId: this.currentRound.id,
-      state: this.currentRound.state,
-      currentMultiplier: this.currentRound.currentMultiplier,
-      hashedSeed: this.currentRound.hashedSeed,
-      bets: this.currentRound.bets.getAll().map(toBetSnapshot),
+      roundId: currentRound.id,
+      state: currentRound.state,
+      currentMultiplier: currentRound.currentMultiplier,
+      hashedSeed: currentRound.hashedSeed,
+      bets: currentRound.bets.getAll().map(toBetSnapshot),
     };
   }
 }

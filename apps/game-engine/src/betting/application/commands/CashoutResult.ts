@@ -7,5 +7,5 @@ export type CashoutResult =
         | 'NOT_BET_OWNER'
         | 'BET_NOT_ACTIVE'
         | 'ROUND_NOT_RUNNING'
-        | 'WALLET_TIMEOUT';
+        | 'ROUND_MISMATCH';
     };

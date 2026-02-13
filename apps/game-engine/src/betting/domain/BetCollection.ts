@@ -32,6 +32,22 @@ export class BetCollection {
     return this.getActive().filter((b) => b.shouldAutoCashout(multiplier));
   }
 
+  forEachAutoCashout(multiplier: number, callback: (bet: Bet) => void): void {
+    for (const bet of this.bets.values()) {
+      if (bet.status === BetStatus.ACTIVE && bet.shouldAutoCashout(multiplier)) {
+        callback(bet);
+      }
+    }
+  }
+
+  forEachByStatus(status: BetStatus, callback: (bet: Bet) => void): void {
+    for (const bet of this.bets.values()) {
+      if (bet.status === status) {
+        callback(bet);
+      }
+    }
+  }
+
   get size(): number {
     return this.bets.size;
   }

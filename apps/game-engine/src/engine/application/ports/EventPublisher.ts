@@ -1,27 +1,7 @@
-import { Bet } from '@betting/domain/Bet';
-import { BetStatus } from '@betting/domain/BetStatus';
+import { BetSnapshot } from '@shared/kernel/BetSnapshot';
+import { GameEvent } from '@engine/application/GameEvent';
 
-export interface BetSnapshot {
-  betId: string;
-  playerId: string;
-  roundId: string;
-  amountCents: number;
-  status: BetStatus;
-  cashoutMultiplier?: number;
-  payoutCents?: number;
-}
-
-export function toBetSnapshot(bet: Bet): BetSnapshot {
-  return {
-    betId: bet.id,
-    playerId: bet.playerId,
-    roundId: bet.roundId,
-    amountCents: bet.amount.toCents(),
-    status: bet.status,
-    cashoutMultiplier: bet.cashoutMultiplier,
-    payoutCents: bet.payout?.toCents(),
-  };
-}
+export type { BetSnapshot };
 
 export interface EventPublisher {
   roundNew(roundId: string, hashedSeed: string): Promise<void>;
@@ -42,4 +22,21 @@ export interface EventPublisher {
     amountCents: number,
     error: string,
   ): Promise<void>;
+  creditFailed(
+    playerId: string,
+    betId: string,
+    roundId: string,
+    payoutCents: number,
+    reason: string,
+  ): Promise<void>;
+  /**
+   * Publish a batch of tick-produced events.
+   *
+   * **Contract:** The `events` array is owned by a double-buffer pool
+   * (`TickEventBuffer`) and will be recycled on the next flush cycle.
+   * Implementations must synchronously read or copy all elements
+   * before their first `await` — any deferred access will see a
+   * cleared array.
+   */
+  publishBatch(events: GameEvent[]): Promise<void>;
 }
