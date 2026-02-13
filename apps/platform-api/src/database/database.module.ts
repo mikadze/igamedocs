@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { Round, Bet, SeedAuditLog } from './entities';
+
+const entities = [Round, Bet, SeedAuditLog];
 
 @Module({
   imports: [
@@ -18,6 +21,8 @@ import { ConfigService } from '@nestjs/config';
         synchronize: config.get('NODE_ENV') !== 'production',
       }),
     }),
+    TypeOrmModule.forFeature(entities),
   ],
+  exports: [TypeOrmModule.forFeature(entities)],
 })
 export class DatabaseModule {}
