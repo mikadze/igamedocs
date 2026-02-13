@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — Deep Ideation Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080d;--s:#101018;--s2:#16161f;--s3:#1c1c28;--b:#1c1c2c;--t:#d8d8e4;--td:#6a6a80;--th:#f0f0f6;--red:#e84545;--ora:#f7a733;--cy:#00d2ff;--gr:#22c55e;--pu:#a855f7;--pk:#ec4899;--ye:#eab308;--tl:#34d399}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:'Outfit',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")}
+.hd{padding:44px 48px 28px;border-bottom:1px solid var(--b)}
+.br{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.lm{width:36px;height:36px;background:linear-gradient(135deg,var(--red),var(--ora));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff}
+.br h1{font-family:'Space Mono',monospace;font-size:22px;color:var(--th)}.br h1 span{color:var(--red)}
+.ps{font-size:11px;color:var(--td);font-family:'Space Mono',monospace;letter-spacing:2.5px;text-transform:uppercase;padding-left:50px}
+.ct{padding:32px 48px 64px;max-width:1500px;margin:0 auto}
+.sl{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--td);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sl::before{content:'';width:8px;height:8px;border-radius:50%}
+.sl.c1::before{background:var(--red);box-shadow:0 0 8px var(--red)}
+.sl.c2::before{background:var(--cy);box-shadow:0 0 8px var(--cy)}
+.sl.c3::before{background:var(--pu);box-shadow:0 0 8px var(--pu)}
+.sl.c4::before{background:var(--gr);box-shadow:0 0 8px var(--gr)}
+.sl.c5::before{background:var(--ora);box-shadow:0 0 8px var(--ora)}
+.sl.c6::before{background:var(--pk);box-shadow:0 0 8px var(--pk)}
+.sl.c7::before{background:var(--tl);box-shadow:0 0 8px var(--tl)}
+.sl.c8::before{background:var(--ye);box-shadow:0 0 8px var(--ye)}
+.st{font-size:22px;font-weight:700;color:var(--th);margin-bottom:4px}
+.sd{font-size:13px;color:var(--td);margin-bottom:24px;max-width:780px;line-height:1.6}
+.dv{height:1px;background:linear-gradient(90deg,transparent,var(--b),transparent);margin:40px 0}
+
+/* Pain badge */
+.pb{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:14px}
+.pb.pain{background:rgba(232,69,69,0.1);color:var(--red);border:1px solid rgba(232,69,69,0.15)}
+.pb.job{background:rgba(0,210,255,0.1);color:var(--cy);border:1px solid rgba(0,210,255,0.15)}
+
+/* Cluster intro */
+.cluster{margin-bottom:40px}
+.cluster-head{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px}
+.cluster-num{font-family:'Space Mono',monospace;font-size:42px;font-weight:700;line-height:1;min-width:56px}
+.cluster-info{flex:1}
+.cluster-title{font-size:18px;font-weight:700;color:var(--th);margin-bottom:4px}
+.cluster-pain{font-size:12.5px;color:var(--td);line-height:1.5}
+.cluster-pain strong{color:var(--t)}
+
+/* Idea cards grid */
+.ideas{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+.idea{background:var(--s);border:1px solid var(--b);border-radius:11px;padding:20px;position:relative;overflow:hidden;transition:transform 0.2s,border-color 0.3s}
+.idea:hover{transform:translateY(-2px);border-color:#2a2a40}
+
+.idea-num{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);margin-bottom:6px}
+.idea-name{font-size:14.5px;font-weight:700;color:var(--th);margin-bottom:5px}
+.idea-hook{font-size:12.5px;color:var(--cy);font-weight:500;margin-bottom:8px;font-style:italic}
+.idea-desc{font-size:12px;color:var(--td);line-height:1.55;margin-bottom:12px}
+
+.idea-why{background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.03);border-radius:7px;padding:10px 12px;margin-bottom:10px}
+.idea-why-label{font-size:9px;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--td);margin-bottom:4px}
+.idea-why-text{font-size:11.5px;color:var(--t);line-height:1.5}
+
+.idea-meta{display:flex;flex-wrap:wrap;gap:5px}
+.mt{font-size:8.5px;font-family:'Space Mono',monospace;letter-spacing:0.8px;padding:2px 6px;border-radius:3px;text-transform:uppercase}
+.mt-h{background:rgba(232,69,69,0.12);color:var(--red);border:1px solid rgba(232,69,69,0.15)}
+.mt-m{background:rgba(247,183,51,0.1);color:var(--ora);border:1px solid rgba(247,183,51,0.15)}
+.mt-l{background:rgba(34,197,94,0.1);color:var(--gr);border:1px solid rgba(34,197,94,0.15)}
+.mt-type{background:rgba(168,85,247,0.08);color:var(--pu);border:1px solid rgba(168,85,247,0.12)}
+.mt-rev{background:rgba(0,210,255,0.08);color:var(--cy);border:1px solid rgba(0,210,255,0.12)}
+
+/* Summary matrix */
+.matrix-wrap{background:var(--s);border:1px solid var(--b);border-radius:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}
+thead th{padding:12px 14px;text-align:left;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);border-bottom:1px solid var(--b);background:var(--s2);position:sticky;top:0}
+tbody td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.02);color:var(--t);font-size:11.5px}
+tbody tr:hover{background:rgba(255,255,255,0.015)}
+.c-gr{color:var(--gr)}.c-cy{color:var(--cy)}.c-ora{color:var(--ora)}.c-red{color:var(--red)}.c-pu{color:var(--pu)}
+.dot-h{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red)}
+.dot-m{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ora)}
+.dot-l{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr)}
+
+@media(max-width:1000px){.ideas{grid-template-columns:1fr}.ct{padding:24px 20px}.hd{padding:32px 20px 24px}.cluster-head{flex-direction:column;gap:8px}}
+</style>
+</head>
+<body>
+<div class="hd">
+<div class="br"><div class="lm">A</div><h1>aviatrix<span>.bet</span></h1></div>
+<div class="ps">Deep Ideation — 42 Ideas Mapped to Pain & Job Clusters</div>
+</div>
+
+<div class="ct">
+
+<div class="sd" style="margin-bottom:32px;max-width:900px">We identified 8 pains and 8 jobs in the VP canvas. Some are well-covered by confirmed features; others have thin or zero coverage. This board focuses on the <strong style="color:var(--th)">underserved clusters</strong> — organized by the operator problem, not by feature category. Each cluster surfaces 4–6 fresh ideas, from practical to radical.</div>
+
+<!-- ============ CLUSTER 1 ============ -->
+<div class="cluster">
+<div class="cluster-head">
+<div class="cluster-num" style="color:var(--red)">01</div>
+<div class="cluster-info">
+<div class="pb pain">P2 + P8 · J2 + J5</div>
+<div class="cluster-title">The Churn Problem — "Why Would I Come Back Tomorrow?"</div>
+<div class="cluster-pain">Players churn in 2–3 months. Sessions feel isolated. No continuity between rounds. No reason to return at a specific time. <strong>Current coverage: Squads and Crews help, but there's no daily return mechanic or long-arc progression.</strong></div>
+</div>
+</div>
+<div class="ideas">
+
+<div class="idea">
+<div class="idea-num">1.1</div>
+<div class="idea-name">Streak Multiplier</div>
+<div class="idea-hook">Play consecutive days → earn a rising edge</div>
+<div class="idea-desc">Log in and play at least one round daily. Day 1: no bonus. Day 3: +0.1x on your next cash-out. Day 7: +0.3x. Day 14: +0.5x. Miss a day, streak resets. Simple, visual, devastating to break. Display the streak prominently on your profile and in Crew view.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Snapchat proved streaks are addictive even with zero monetary value. Adding a tiny financial edge on top makes it compulsive. Operators love it: daily sessions = daily deposits.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-type">Retention</span><span class="mt mt-rev">Revenue lift</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">1.2</div>
+<div class="idea-name">Narrative Seasons (30-Day Arcs)</div>
+<div class="idea-hook">Each month is a story, not just a leaderboard reset</div>
+<div class="idea-desc">Season 1: "The Storm" — volatility rooms shift week by week, weather effects intensify. Week 1 is calm. Week 4 is a hurricane with wild multipliers. Players who survive all 4 weeks unlock an exclusive "Storm Pilot" badge and plane skin. Each season has lore, visual themes, a climax event.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Fortnite doesn't sell gunplay — it sells seasons. The narrative creates FOMO ("I missed The Storm, I can never get that badge"). Crash games have zero narrative today. First mover owns the format.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Retention</span><span class="mt mt-type">Differentiation</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">1.3</div>
+<div class="idea-name">Persistent Fuel Tank</div>
+<div class="idea-hook">Your plane has fuel. Playing fills it. Inactivity drains it.</div>
+<div class="idea-desc">Every round played adds fuel. Full tank unlocks premium features: access to Degen volatility rooms, Survivor Lobby entry, enhanced Black Box styles. Tank drains 10% per day of inactivity. If empty, you lose premium access until you play again. Crew members can "gift fuel" to keep friends active.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Loss aversion. Players return not for reward but to avoid losing access they already earned. Fuel gifting adds social retention — your crewmate pings you to play because they need your fuel.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Retention</span><span class="mt mt-rev">Engagement</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">1.4</div>
+<div class="idea-name">"The Vault" — Compound Savings Game</div>
+<div class="idea-hook">Set aside micro-wins automatically. Watch them grow.</div>
+<div class="idea-desc">Players opt in to auto-save a tiny % of every win (1–5%) into a personal Vault. Vault compounds with a small bonus rate daily (e.g., 0.1%). Withdrawal locks for 7 days. If you play every day during the lock period, you get an extra 10% unlock bonus. Creates a "savings streak" alongside the gambling.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Gives players a reason to keep playing that isn't "win more" — it's "grow my stash." Reframes the relationship from pure gambling to a hybrid savings-game loop. Regulatory angle: promotes responsible play by encouraging saving.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Retention</span><span class="mt mt-rev">Responsible gambling</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">1.5</div>
+<div class="idea-name">Session Recap + "Tomorrow's Forecast"</div>
+<div class="idea-hook">End-of-session screen that hooks you into tomorrow</div>
+<div class="idea-desc">After your last round, show a cinematic session recap: total rounds, best cash-out, crew performance, rank change. Then tease tomorrow: "Tomorrow's Survivor Lobby: €5K pool, starts 7pm. Your crew has qualified." Or: "Your streak is at 6 days — one more to unlock the 7-day bonus."</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Every great app has an exit hook. Netflix shows the next episode. Duolingo shows your streak. Crash games just... end. This creates a reason to return and a specific time to return.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-type">Retention</span><span class="mt mt-type">Appointment play</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">1.6</div>
+<div class="idea-name">Crew Contracts (Weekly Commitments)</div>
+<div class="idea-hook">Promise your crew you'll play this week. Break it? Penalty.</div>
+<div class="idea-desc">At the start of each week, each Crew member "signs" a contract: "I commit to 10 rounds this week." If all members fulfill contracts, Crew gets a collective bonus (e.g., bonus Crew XP, cosmetic unlock, prize draw entry). If someone breaks contract, their name shows in red and the whole crew misses the reward.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Social commitment devices are the most powerful retention tool in behavioral science. You don't come back for the game — you come back because you promised your friends. The public accountability makes it stick.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-type">Retention</span><span class="mt mt-type">Social pressure</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ CLUSTER 2 ============ -->
+<div class="cluster">
+<div class="cluster-head">
+<div class="cluster-num" style="color:var(--cy)">02</div>
+<div class="cluster-info">
+<div class="pb job">P3 + P4 · J3 + J4 + J6</div>
+<div class="cluster-title">The Acquisition Problem — "How Do I Get Players Without Buying Them?"</div>
+<div class="cluster-pain">CPA rising 20% YoY. Can't reach Gen-Z. WhatsApp/Telegram markets are underserved. Need content that markets itself. <strong>Current coverage: Black Box and Crew links are strong. But the top of funnel is thin — what about people who aren't yet gamblers?</strong></div>
+</div>
+</div>
+<div class="ideas">
+
+<div class="idea">
+<div class="idea-num">2.1</div>
+<div class="idea-name">"The Crash" — Free Spectator App</div>
+<div class="idea-hook">Watch real crash rounds live with zero wagering</div>
+<div class="idea-desc">A standalone free app (or web page) where anyone can watch live crash rounds from across all operators. See real bets, real cash-outs, real drama. Chat with spectators. Make predictions (non-monetary). Top predictors get a leaderboard and bragging rights. One-tap to switch from spectating to playing.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Twitch proved people will watch others gamble for entertainment. This is Twitch but native — no streamer needed. Legal everywhere because it's non-wagering. The funnel: watch → predict → compete → bet.</div></div>
+<div class="idea-meta"><span class="mt mt-h">High dev</span><span class="mt mt-type">Acquisition</span><span class="mt mt-rev">Funnel</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">2.2</div>
+<div class="idea-name">WhatsApp Mini-Game Bot</div>
+<div class="idea-hook">Play a crash-like prediction game inside WhatsApp</div>
+<div class="idea-desc">A WhatsApp bot that runs a simplified crash prediction game in-chat. "The curve is rising... reply CASH to lock in your multiplier!" No real money — points and leaderboards only. Top scorers get an invite link to the real game with a sign-up bonus. Runs in group chats as a party game.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Sofia's LatAm and African markets live on WhatsApp. You can't run ads there but you CAN run bots. This puts crash gameplay literally inside the messaging app, zero download required. Group chat = social proof + peer pressure.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Acquisition</span><span class="mt mt-type">WhatsApp-native</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">2.3</div>
+<div class="idea-name">Referral Kickback Chain</div>
+<div class="idea-hook">Earn from your friends' friends' friends</div>
+<div class="idea-desc">Standard referral: you get a small % of your referral's GGR. Innovation: make it a 3-level chain. You → Friend → Friend's friend. Tiny % at each level (e.g., 2% → 0.5% → 0.1%) but the compound effect is motivating. Visualize the "tree" of your referral network with live earnings ticker.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Multi-level referrals turned Uber, Dropbox, and crypto exchanges into viral machines. The tree visualization is the key — seeing your network grow is inherently shareable. "Look at my referral empire" becomes its own content format.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-type">Acquisition</span><span class="mt mt-rev">Revenue</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">2.4</div>
+<div class="idea-name">"Crash IQ" — Social Media Quiz Funnel</div>
+<div class="idea-hook">How good are your nerves? Take the 30-second test.</div>
+<div class="idea-desc">Interactive quiz on Instagram/TikTok: show 5 rapidly rising curves and ask "when would you cash out?" Score their risk profile. "You're a Diamond Hands — you'd hold to 47x." Shareable result card. Deep-link at the bottom to play for real with a "your profile says you'd be great at crash games" CTA.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Personality quizzes have viral coefficients of 3–5x on social media. This one doubles as product education — people who take it already understand crash mechanics before they arrive. The result card is the share mechanic.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-type">Acquisition</span><span class="mt mt-type">Content</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">2.5</div>
+<div class="idea-name">Telegram Mini App (Native Game)</div>
+<div class="idea-hook">Full crash game inside Telegram, zero redirect</div>
+<div class="idea-desc">Build Aviatrix as a Telegram Mini App. Players open the bot, play crash rounds, manage their Crew, see leaderboards — all without leaving Telegram. TON wallet integration for crypto payments. Telegram's 900M+ users as an instant addressable market.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Telegram Mini Apps are the fastest-growing game distribution channel in 2025–2026. Hamster Kombat hit 300M users this way. Crash games are a perfect fit: short sessions, fast rounds, crypto-native payments. First social crash game on Telegram wins.</div></div>
+<div class="idea-meta"><span class="mt mt-h">High dev</span><span class="mt mt-type">Acquisition</span><span class="mt mt-type">Distribution</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ CLUSTER 3 ============ -->
+<div class="cluster">
+<div class="cluster-head">
+<div class="cluster-num" style="color:var(--pu)">03</div>
+<div class="cluster-info">
+<div class="pb job">J8 + J1 · P1</div>
+<div class="cluster-title">The Monetization Problem — "How Do I Make More Than 3% Edge?"</div>
+<div class="cluster-pain">Operator revenue is limited to house edge on wagers. Crash is high-margin but single-dimensional. <strong>Current coverage: Survivor rake and cosmetics are a start. But there are entire revenue layers untouched.</strong></div>
+</div>
+</div>
+<div class="ideas">
+
+<div class="idea">
+<div class="idea-num">3.1</div>
+<div class="idea-name">Cosmetic Marketplace</div>
+<div class="idea-hook">Player-to-player trading of plane skins, trails, and badges</div>
+<div class="idea-desc">Let players buy, sell, and trade cosmetic items. Limited-edition skins from seasons that expired become scarce. "Storm Pilot" badge from Season 1 trades for 10x its original price by Season 5. Marketplace takes a 5–10% transaction fee. Operator-branded skins as sponsored items.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">CS:GO's skin market generates $400M+/year with zero impact on gameplay. Scarcity (expired seasons) + status (rare badges visible in-game) + trading = self-sustaining economy. The marketplace fee is pure margin.</div></div>
+<div class="idea-meta"><span class="mt mt-h">High dev</span><span class="mt mt-rev">Revenue stream</span><span class="mt mt-type">Retention</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">3.2</div>
+<div class="idea-name">"Boost Rounds" — Premium Modifier Tokens</div>
+<div class="idea-hook">Buy a token that modifies the next round's risk/reward</div>
+<div class="idea-desc">Purchasable tokens: "Safe Landing" (insures one round against sub-1.5x crash), "Turbo" (1.2x multiplier on your cash-out), "Double or Nothing" (2x your bet, 2x the risk). Tokens are consumed on use. Sold for real money or earned through gameplay. Operator sets pricing.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Mobile gaming's biggest revenue driver is consumable power-ups. Crash has none. The key: tokens don't change the house edge math (they're priced to preserve it) but they feel like player agency. "I chose to boost this round" is psychologically different from "I just bet more."</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-rev">Revenue stream</span><span class="mt mt-type">Differentiation</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">3.3</div>
+<div class="idea-name">Sponsored Volatility Events</div>
+<div class="idea-hook">Brands pay to "sponsor" a high-volatility hour</div>
+<div class="idea-desc">Partner with crypto projects, exchanges, or gaming brands to sponsor special event windows. "The Binance Hour: 8–9pm, boosted volatility, €25K added to prize pool." Brand gets logo on-screen, in Black Box shares, on Crash Clips. Operator gets sponsorship revenue + traffic spike.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Sports do this already (halftime sponsors, stadium naming). Crash has zero sponsorship infrastructure. One branded hour = massive reach via all the sharing mechanics. Sponsor pays for the prize pool, operator keeps the rake, players get excitement. Everyone wins.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-rev">Revenue stream</span><span class="mt mt-type">B2B value</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">3.4</div>
+<div class="idea-name">Data-as-a-Service for Operators</div>
+<div class="idea-hook">Sell anonymized player behavior insights back to operators</div>
+<div class="idea-desc">Aviatrix sees cross-operator play patterns: when players are most active, which volatility they prefer, how social features affect LTV. Package these into a dashboard for operators: "Players who join Crews have 2.4x longer LTV" with actionable recommendations. Premium analytics tier.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">No crash provider sells intelligence back to operators today. You're sitting on behavioral data no one else has because no one else has social mechanics. The insight is the moat — operators can't get this data from Spribe.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-rev">Revenue stream</span><span class="mt mt-type">B2B value</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">3.5</div>
+<div class="idea-name">Premium Crew Tiers</div>
+<div class="idea-hook">Upgrade your Crew for enhanced features</div>
+<div class="idea-desc">Free Crew: 2–3 members, basic features. Silver Crew (paid): 5 members, private voice chat, custom Crew badge. Gold Crew: 10 members, dedicated Hangar, priority Survivor Lobby entry, analytics dashboard showing crew performance. Monthly subscription or one-time unlock.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Discord proved people will pay for enhanced group features. The social layer is the perfect upsell surface because the value is shared — one person pays, everyone benefits. Group pressure: "who's going to upgrade us to Gold?"</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-rev">Recurring revenue</span><span class="mt mt-type">Social</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ CLUSTER 4 ============ -->
+<div class="cluster">
+<div class="cluster-head">
+<div class="cluster-num" style="color:var(--gr)">04</div>
+<div class="cluster-info">
+<div class="pb pain">P5 + P7 · J6 + J7</div>
+<div class="cluster-title">The Content Problem — "Crash Isn't Watchable Enough"</div>
+<div class="cluster-pain">Streamer deals are expensive and ROI unclear. Crash rounds look the same on stream. No spectator formats beyond basic watching. <strong>Current coverage: Survivor Lobbies and Crash Clips help. But the streamer economics and format variety need more depth.</strong></div>
+</div>
+</div>
+<div class="ideas">
+
+<div class="idea">
+<div class="idea-num">4.1</div>
+<div class="idea-name">Audience-Controlled Rounds</div>
+<div class="idea-hook">Chat votes on the streamer's strategy in real-time</div>
+<div class="idea-desc">During a streamer's round, Twitch/YouTube chat votes: "HOLD" or "CASH OUT" using chat commands. Majority decision executes automatically. Streamer's bet, audience's call. Creates a "Twitch Plays Crash" dynamic. Revenue share with the audience pool based on their collective decision.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">"Twitch Plays Pokémon" proved collective decision-making is compelling content. This turns passive viewers into active participants without them needing an account. The chaos of 5,000 people deciding when to cash out is inherently entertaining and clippable.</div></div>
+<div class="idea-meta"><span class="mt mt-h">High dev</span><span class="mt mt-type">Spectacle</span><span class="mt mt-type">Acquisition</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">4.2</div>
+<div class="idea-name">Commentator Mode</div>
+<div class="idea-hook">Third-party shoutcasters for Survivor Lobbies</div>
+<div class="idea-desc">A spectator UI designed for live commentary: bird's-eye view of all 100 players, highlight auto-focus on biggest bets, elimination counter, auto-generated player stat overlays. Let aspiring esports casters commentate Survivor Lobbies on their own streams with professional-grade tooling.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Esports grew because the spectator tooling was excellent, not because the games were perfect. Giving commentators good tools creates a content ecosystem around your game without paying anyone. They create content because the tools make it easy and the format is compelling.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Content</span><span class="mt mt-type">Spectacle</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">4.3</div>
+<div class="idea-name">"The Bet" — Streamer vs. Streamer Duels</div>
+<div class="idea-hook">Two streamers, one curve, winner takes all</div>
+<div class="idea-desc">Structured format: two streamers enter a best-of-5 duel. Same curve, same starting bet. Who cashes out at a higher multiplier without crashing wins the round. Audience bets on who wins (via Copy-Bet). Scheduled events with promotion and buildup. Think boxing press conferences but for crash.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Head-to-head competition is the foundation of entertainment. Streamers will promote the event to their audiences (free marketing). The duel format creates narrative tension that a solo round never can. Both fanbases tune in = combined audience.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Spectacle</span><span class="mt mt-type">Acquisition</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">4.4</div>
+<div class="idea-name">Auto-Highlight Reel</div>
+<div class="idea-hook">AI picks your best moments, edits them into a reel</div>
+<div class="idea-desc">End of each session, AI selects the 3 most dramatic moments (biggest win, closest call, worst crash) and auto-edits them into a 15-second reel with music, effects, and transition. One-tap share. Weekly "Best of Aviatrix" compilation auto-generated from top community reels.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Black Box is a static card. This is video — the dominant social media format. The AI editing removes the barrier completely. Players don't need to know how to edit. The weekly compilation becomes a marketing engine that costs zero to produce.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Content</span><span class="mt mt-type">Acquisition</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">4.5</div>
+<div class="idea-name">Micro-Influencer Revenue Share (No Guarantee)</div>
+<div class="idea-hook">Any player with 500+ followers can earn from their Crew</div>
+<div class="idea-desc">Democratize the streamer model. Any player who recruits 10+ active Crew members gets a tiny rev-share (0.5–1% of their Crew's GGR). No minimum guarantee, pure performance. Dashboard shows earnings. Creates 10,000 micro-influencers instead of 10 expensive macro-streamers.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Sofia's problem: she can't afford €15K streamer guarantees. This gives her 10,000 players acting as micro-affiliates. The economics are better (pay only for performance) and the distribution is wider (10K people sharing > 1 person streaming).</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-rev">Revenue model</span><span class="mt mt-type">Acquisition</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ CLUSTER 5 ============ -->
+<div class="cluster">
+<div class="cluster-head">
+<div class="cluster-num" style="color:var(--ora)">05</div>
+<div class="cluster-info">
+<div class="pb pain">P6 · J7</div>
+<div class="cluster-title">The Regulation Problem — "Novel Mechanics Scare My Compliance Team"</div>
+<div class="cluster-pain">Operators want innovation but fear regulatory risk. Novel social gambling mechanics have no precedent. <strong>Current coverage: GLI certification is planned. But we can go further — make compliance itself a competitive weapon.</strong></div>
+</div>
+</div>
+<div class="ideas">
+
+<div class="idea">
+<div class="idea-num">5.1</div>
+<div class="idea-name">Responsible Play Score (Public)</div>
+<div class="idea-hook">A visible "health score" for every player</div>
+<div class="idea-desc">Track behavioral signals: session length, loss-chasing patterns, deposit frequency. Generate a public "Play Score" (like a credit score for gambling health). High scores unlock features. Low scores trigger cooling-off suggestions. Operators can use the score for their own responsible gambling reporting.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Regulators are moving toward mandated behavioral monitoring. Build it first, voluntarily, and you set the standard. Operators choosing Aviatrix can tell regulators "we use the most advanced responsible play system in crash gaming." Compliance becomes a sales argument.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Regulation</span><span class="mt mt-type">B2B value</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">5.2</div>
+<div class="idea-name">Cool-Down Mini-Games</div>
+<div class="idea-hook">After a losing streak, offer a non-wagering breather</div>
+<div class="idea-desc">If a player loses 5+ rounds in a row, gently suggest a "Cool-Down Zone": a free mini-game (e.g., a casual flight simulator, a non-gambling prediction game) that earns small XP or cosmetics. No bet, no risk. The player stays engaged without chasing losses. Return to wagering after 5 minutes.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Current responsible gambling tools are blunt: pop-ups, deposit limits, forced breaks. This is elegant — it keeps the player in the ecosystem while actually protecting them. Regulators see a harm-reduction innovation. Players see a fun interlude, not a lecture.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Regulation</span><span class="mt mt-type">Retention</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">5.3</div>
+<div class="idea-name">Compliance API for Operators</div>
+<div class="idea-hook">Give operators a plug-in responsible gambling layer</div>
+<div class="idea-desc">Expose Aviatrix's behavioral data via API: session analytics, risk scores, loss-chasing detection, social interaction health. Operators plug this into their existing compliance dashboards. Saves them from building their own monitoring. Especially valuable for MGA/UKGC operators under scrutiny.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Marcus (Tier-1) has a compliance team that demands data. Most game providers send basic round data. Aviatrix sends behavioral intelligence. This de-risks his decision to integrate a novel product and makes his compliance team advocates, not blockers.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">B2B value</span><span class="mt mt-type">Regulation</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">5.4</div>
+<div class="idea-name">"Buddy System" Opt-In</div>
+<div class="idea-hook">Designate a friend who gets alerts on your play patterns</div>
+<div class="idea-desc">Player voluntarily designates a "Buddy" (friend, partner, family member). Buddy receives weekly anonymized summary: "played 14 sessions, net result within normal range" or "flagged: unusually high session frequency." Buddy can trigger a suggested cool-down. Opt-in, revocable.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Social accountability applied to responsible gambling. Regulators would celebrate this as a genuine innovation. It's also differentiation — no crash game or slot provider has anything like this. UKGC would likely highlight it in industry reports.</div></div>
+<div class="idea-meta"><span class="mt mt-l">Low dev</span><span class="mt mt-type">Regulation</span><span class="mt mt-type">Differentiation</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ CLUSTER 6 ============ -->
+<div class="cluster">
+<div class="cluster-head">
+<div class="cluster-num" style="color:var(--pk)">06</div>
+<div class="cluster-info">
+<div class="pb job">P1 · J7</div>
+<div class="cluster-title">The Differentiation Problem — "Make Crash Feel Like Nothing Else"</div>
+<div class="cluster-pain">Every crash game is a curve and a cash-out button. Visual reskins don't create moats. <strong>Current coverage: Social mechanics differentiate massively. But the core round experience itself could evolve.</strong></div>
+</div>
+</div>
+<div class="ideas">
+
+<div class="idea">
+<div class="idea-num">6.1</div>
+<div class="idea-name">Multi-Curve Rounds</div>
+<div class="idea-hook">Three curves rise simultaneously. Pick the right one.</div>
+<div class="idea-desc">Each round spawns 3 curves (red, blue, gold) that rise at different rates and crash at different times. Player bets on one. Red might crash at 1.5x while gold reaches 12x. Adds a layer of choice to the standard mechanic. Crew members can split across curves for a hedging strategy.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">The single-curve format is 10 years old. This is the first structural evolution of crash mechanics since Bustabit. It changes the decision from "when to cash out" to "which path + when to cash out." The Crew splitting adds a cooperative dimension no one has.</div></div>
+<div class="idea-meta"><span class="mt mt-h">High dev</span><span class="mt mt-type">Differentiation</span><span class="mt mt-type">Innovation</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">6.2</div>
+<div class="idea-name">Obstacle Curves (Skill Layer)</div>
+<div class="idea-hook">Avoid obstacles during the climb for bonus multipliers</div>
+<div class="idea-desc">As the curve rises, obstacles appear (storm clouds, turbulence zones). Player taps to dodge. Successful dodges boost the multiplier by +0.1x–0.5x each. Miss a dodge and you lose the bonus (but don't crash). Adds a reflex-skill layer on top of the timing-risk decision. RNG still determines the crash point.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Current crash games are purely passive watching. This adds active engagement during the round itself. Skill-based elements are trending in iGaming regulation (better classification). The dodge moments are inherently clippable content.</div></div>
+<div class="idea-meta"><span class="mt mt-h">High dev</span><span class="mt mt-type">Differentiation</span><span class="mt mt-type">Spectacle</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">6.3</div>
+<div class="idea-name">Dynamic Environments</div>
+<div class="idea-hook">The world changes based on what's happening in the round</div>
+<div class="idea-desc">Below 2x: calm sky, gentle music. 2x–5x: clouds gather, wind effects, music intensifies. 5x–10x: storm, lightning, camera shake. 10x+: space, stars, weightlessness. The environment reacts in real-time to the multiplier. Crew members experience the same weather simultaneously.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Current crash games have static backgrounds. This makes every round cinematic. The environmental shifts create natural drama that's visible on stream and in clips. High-multiplier rounds literally look and feel different — making them more shareable.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Spectacle</span><span class="mt mt-type">Content</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">6.4</div>
+<div class="idea-name">Conditional Cash-Out Rules</div>
+<div class="idea-hook">Set complex exit strategies before the round</div>
+<div class="idea-desc">"Cash out Bet 1 at 2x. If Bet 1 succeeds, let Bet 2 ride to 5x. If Bet 1 crashes, auto-cash Bet 2 immediately." Pre-programmable logic chains. Like setting limit orders in trading. Appeals to strategic players who want more agency than simple auto-cashout.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Crash attracts crypto-native players who think in trading terms. Conditional logic feels like algorithmic trading. It adds strategic depth without changing the underlying math. Players share their "strategies" as content — "try my 2x-gate to 5x-ride setup."</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Differentiation</span><span class="mt mt-type">Retention</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">6.5</div>
+<div class="idea-name">Mystery Modifier Rounds</div>
+<div class="idea-hook">Random modifiers announced before each round</div>
+<div class="idea-desc">Every 10th round is a "Modified Round" with a random twist announced 10 seconds before: "GRAVITY: curve rises 2x slower but crashes 2x later" or "MIRROR: your bet inverts — higher cash-out = lower payout, but crash = win." Keeps the mechanic fresh and unpredictable.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Mario Kart items. Fortnite mutators. The best competitive games add controlled randomness to prevent staleness. Modified rounds create "wait for it" anticipation — players stay through 9 normal rounds to reach the 10th. The modifiers are inherently content-worthy.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Differentiation</span><span class="mt mt-type">Spectacle</span></div>
+</div>
+
+<div class="idea">
+<div class="idea-num">6.6</div>
+<div class="idea-name">Crew Formation Bonuses</div>
+<div class="idea-hook">How your crew cash-outs combine matters</div>
+<div class="idea-desc">If your 3-person Crew cashes out in a specific pattern, you trigger a combo bonus. "The Ladder": each member cashes out at ascending multipliers (2x, 4x, 6x) → 1.5x bonus for all. "The Wall": all three cash out within 0.5x of each other → 1.2x bonus. "The Sacrifice": one crashes so the other two get 2x bonus.</div>
+<div class="idea-why"><div class="idea-why-label">Why it works</div><div class="idea-why-text">Turns crash from parallel play into coordinated strategy. Crews have to communicate and plan before the round. "The Sacrifice" is gameshow-level drama — who volunteers to crash for the team? This is the mechanic streamers would build entire shows around.</div></div>
+<div class="idea-meta"><span class="mt mt-m">Med dev</span><span class="mt mt-type">Spectacle</span><span class="mt mt-type">Social</span><span class="mt mt-type">Differentiation</span></div>
+</div>
+
+</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ SUMMARY ============ -->
+<div class="sl c2">Summary Matrix</div>
+<div class="st">All 42 Ideas at a Glance</div>
+<div class="sd">Ideas from the VP canvas ideation (18) plus this deep brainstorm (24). Sorted by cluster, tagged by impact and effort.</div>
+
+<div class="matrix-wrap">
+<table>
+<thead>
+<tr><th style="width:30px">#</th><th>Idea</th><th>Cluster</th><th>Impact</th><th>Effort</th><th>Solves</th><th>Key Insight</th></tr>
+</thead>
+<tbody>
+<tr><td>1.1</td><td class="c-th" style="color:var(--th)">Streak Multiplier</td><td>Churn</td><td><span class="dot-h"></span> High</td><td><span class="dot-l"></span> Low</td><td>P2, J2, J5</td><td>Snapchat streaks + financial edge</td></tr>
+<tr><td>1.2</td><td style="color:var(--th)">Narrative Seasons</td><td>Churn</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P2, P8, J5</td><td>Fortnite model — sell seasons, not rounds</td></tr>
+<tr><td>1.3</td><td style="color:var(--th)">Persistent Fuel Tank</td><td>Churn</td><td><span class="dot-m"></span> Med</td><td><span class="dot-m"></span> Med</td><td>P2, J2</td><td>Loss aversion > reward seeking</td></tr>
+<tr><td>1.4</td><td style="color:var(--th)">The Vault</td><td>Churn</td><td><span class="dot-m"></span> Med</td><td><span class="dot-m"></span> Med</td><td>P2, J2</td><td>Savings psychology inside gambling</td></tr>
+<tr><td>1.5</td><td style="color:var(--th)">Session Recap + Forecast</td><td>Churn</td><td><span class="dot-h"></span> High</td><td><span class="dot-l"></span> Low</td><td>P8, J5</td><td>Exit hook — Netflix's "next episode"</td></tr>
+<tr><td>1.6</td><td style="color:var(--th)">Crew Contracts</td><td>Churn</td><td><span class="dot-h"></span> High</td><td><span class="dot-l"></span> Low</td><td>P2, J2</td><td>Social commitment devices</td></tr>
+<tr><td>2.1</td><td style="color:var(--th)">Free Spectator App</td><td>Acquisition</td><td><span class="dot-h"></span> High</td><td><span class="dot-h"></span> High</td><td>P3, P4, J3</td><td>Twitch but native — no streamer needed</td></tr>
+<tr><td>2.2</td><td style="color:var(--th)">WhatsApp Mini-Game Bot</td><td>Acquisition</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P3, J3, J4</td><td>Game inside the messaging app</td></tr>
+<tr><td>2.3</td><td style="color:var(--th)">Referral Kickback Chain</td><td>Acquisition</td><td><span class="dot-h"></span> High</td><td><span class="dot-l"></span> Low</td><td>P3, J3</td><td>Multi-level referral tree visualization</td></tr>
+<tr><td>2.4</td><td style="color:var(--th)">Crash IQ Quiz Funnel</td><td>Acquisition</td><td><span class="dot-m"></span> Med</td><td><span class="dot-l"></span> Low</td><td>P4, J3, J6</td><td>Personality quiz = viral + education</td></tr>
+<tr><td>2.5</td><td style="color:var(--th)">Telegram Mini App</td><td>Acquisition</td><td><span class="dot-h"></span> High</td><td><span class="dot-h"></span> High</td><td>P3, P4, J3, J4</td><td>900M users, crash-native format</td></tr>
+<tr><td>3.1</td><td style="color:var(--th)">Cosmetic Marketplace</td><td>Monetization</td><td><span class="dot-h"></span> High</td><td><span class="dot-h"></span> High</td><td>J8, J7</td><td>CS:GO skin economy for crash</td></tr>
+<tr><td>3.2</td><td style="color:var(--th)">Boost Round Tokens</td><td>Monetization</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P1, J8</td><td>Mobile gaming consumables model</td></tr>
+<tr><td>3.3</td><td style="color:var(--th)">Sponsored Volatility Events</td><td>Monetization</td><td><span class="dot-h"></span> High</td><td><span class="dot-l"></span> Low</td><td>J8, J7</td><td>Brand sponsorship infrastructure</td></tr>
+<tr><td>3.4</td><td style="color:var(--th)">Data-as-a-Service</td><td>Monetization</td><td><span class="dot-m"></span> Med</td><td><span class="dot-m"></span> Med</td><td>J8</td><td>Sell behavioral intelligence to operators</td></tr>
+<tr><td>3.5</td><td style="color:var(--th)">Premium Crew Tiers</td><td>Monetization</td><td><span class="dot-m"></span> Med</td><td><span class="dot-l"></span> Low</td><td>J8</td><td>Discord Nitro for gambling crews</td></tr>
+<tr><td>4.1</td><td style="color:var(--th)">Audience-Controlled Rounds</td><td>Content</td><td><span class="dot-h"></span> High</td><td><span class="dot-h"></span> High</td><td>P5, P7, J6</td><td>Twitch Plays Crash</td></tr>
+<tr><td>4.2</td><td style="color:var(--th)">Commentator Mode</td><td>Content</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P7, J6</td><td>Esports grew from spectator tooling</td></tr>
+<tr><td>4.3</td><td style="color:var(--th)">Streamer Duels</td><td>Content</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P5, P7, J6</td><td>Head-to-head = the foundation of entertainment</td></tr>
+<tr><td>4.4</td><td style="color:var(--th)">Auto-Highlight Reel</td><td>Content</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P7, J6</td><td>AI-edited video > static Black Box</td></tr>
+<tr><td>4.5</td><td style="color:var(--th)">Micro-Influencer Rev Share</td><td>Content</td><td><span class="dot-h"></span> High</td><td><span class="dot-l"></span> Low</td><td>P5, J3, J6</td><td>10K micro-affiliates > 10 macro-streamers</td></tr>
+<tr><td>5.1</td><td style="color:var(--th)">Responsible Play Score</td><td>Regulation</td><td><span class="dot-m"></span> Med</td><td><span class="dot-m"></span> Med</td><td>P6, J7</td><td>Set the standard before regulators mandate it</td></tr>
+<tr><td>5.2</td><td style="color:var(--th)">Cool-Down Mini-Games</td><td>Regulation</td><td><span class="dot-m"></span> Med</td><td><span class="dot-m"></span> Med</td><td>P6</td><td>Elegant harm reduction vs blunt pop-ups</td></tr>
+<tr><td>5.3</td><td style="color:var(--th)">Compliance API</td><td>Regulation</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P6</td><td>Compliance team becomes your advocate</td></tr>
+<tr><td>5.4</td><td style="color:var(--th)">Buddy System</td><td>Regulation</td><td><span class="dot-m"></span> Med</td><td><span class="dot-l"></span> Low</td><td>P6</td><td>Social accountability for responsible play</td></tr>
+<tr><td>6.1</td><td style="color:var(--th)">Multi-Curve Rounds</td><td>Differentiation</td><td><span class="dot-h"></span> High</td><td><span class="dot-h"></span> High</td><td>P1, J7</td><td>First structural evolution since Bustabit</td></tr>
+<tr><td>6.2</td><td style="color:var(--th)">Obstacle Curves</td><td>Differentiation</td><td><span class="dot-h"></span> High</td><td><span class="dot-h"></span> High</td><td>P1, J7</td><td>Active engagement during the round</td></tr>
+<tr><td>6.3</td><td style="color:var(--th)">Dynamic Environments</td><td>Differentiation</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P7, J7</td><td>Every round becomes cinematic</td></tr>
+<tr><td>6.4</td><td style="color:var(--th)">Conditional Cash-Out Rules</td><td>Differentiation</td><td><span class="dot-m"></span> Med</td><td><span class="dot-m"></span> Med</td><td>P1, J7</td><td>Algorithmic trading for crash</td></tr>
+<tr><td>6.5</td><td style="color:var(--th)">Mystery Modifier Rounds</td><td>Differentiation</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P1, P8, J7</td><td>Mario Kart items for crash</td></tr>
+<tr><td>6.6</td><td style="color:var(--th)">Crew Formation Bonuses</td><td>Differentiation</td><td><span class="dot-h"></span> High</td><td><span class="dot-m"></span> Med</td><td>P1, J7</td><td>"The Sacrifice" = gameshow-level drama</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="dv"></div>
+
+<div class="sl c4">Quick Wins — Build This Week</div>
+<div class="st">7 Ideas That Are Low-Effort, High-Impact</div>
+<div class="sd">Filtered for: low dev cost + high operator pull + immediate testability. These can ship in 1–2 sprints.</div>
+
+<div class="ideas" style="grid-template-columns:repeat(4,1fr)">
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Streak Multiplier</div>
+<div class="idea-desc" style="font-size:11px">Daily play streak → small rising edge. Snapchat for gambling.</div>
+</div>
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Session Recap + Forecast</div>
+<div class="idea-desc" style="font-size:11px">End-of-session hook that teases tomorrow's events.</div>
+</div>
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Crew Contracts</div>
+<div class="idea-desc" style="font-size:11px">Weekly promises to your crew. Social commitment device.</div>
+</div>
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Referral Kickback Chain</div>
+<div class="idea-desc" style="font-size:11px">3-level referral tree with live earnings visualization.</div>
+</div>
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Crash IQ Quiz</div>
+<div class="idea-desc" style="font-size:11px">Social media quiz funnel. Viral + product education.</div>
+</div>
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Sponsored Events</div>
+<div class="idea-desc" style="font-size:11px">Brands sponsor volatility hours. New revenue stream, zero dev.</div>
+</div>
+<div class="idea" style="border-left:3px solid var(--gr)">
+<div class="idea-name">Micro-Influencer Rev Share</div>
+<div class="idea-desc" style="font-size:11px">10K micro-affiliates replace 10 expensive macro-streamers.</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — B2B Customer Personas</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080d;
+    --surface: #101018;
+    --surface2: #16161f;
+    --border: #1c1c2c;
+    --border-active: #2e2e44;
+    --text: #d8d8e4;
+    --text-dim: #6a6a80;
+    --text-head: #f0f0f6;
+    --red: #e84545;
+    --orange: #f7a733;
+    --cyan: #00d2ff;
+    --green: #22c55e;
+    --purple: #a855f7;
+    --pink: #ec4899;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .header {
+    padding: 44px 48px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(232,69,69,0.12);
+  }
+
+  .brand h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    color: var(--text-head);
+  }
+
+  .brand h1 span { color: var(--red); }
+
+  .page-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding-left: 50px;
+  }
+
+  /* Tab navigation */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    padding: 20px 48px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.25s;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .tab:hover { color: var(--text); background: var(--surface); }
+
+  .tab.active {
+    color: var(--text-head);
+    background: var(--surface);
+  }
+
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--cyan);
+  }
+
+  .tab-panels { padding: 32px 48px 56px; }
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeUp 0.35s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Persona Header Card */
+  .persona-hero {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 28px;
+    margin-bottom: 36px;
+  }
+
+  .persona-id {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+
+  .persona-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .persona-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-head);
+    margin-bottom: 4px;
+  }
+
+  .persona-role {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
+
+  .persona-stats {
+    text-align: left;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 12px;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-dim); }
+  .stat-val { color: var(--text-head); font-weight: 600; }
+
+  .persona-quote-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .persona-quote {
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text-head);
+    line-height: 1.55;
+    font-style: italic;
+    margin-bottom: 20px;
+    position: relative;
+    padding-left: 24px;
+  }
+
+  .persona-quote::before {
+    content: '"';
+    position: absolute;
+    left: -4px;
+    top: -8px;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 800;
+    opacity: 0.12;
+  }
+
+  .persona-context {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Pains / Gains / Jobs grid */
+  .pgj-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .pgj-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pgj-col::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .col-pains::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .col-gains::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+  .col-jobs::before  { background: linear-gradient(90deg, var(--purple), var(--pink)); }
+
+  .pgj-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .pgj-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+
+  .col-pains .pgj-icon { background: rgba(232,69,69,0.12); color: var(--red); }
+  .col-gains .pgj-icon { background: rgba(34,197,94,0.12); color: var(--green); }
+  .col-jobs .pgj-icon  { background: rgba(168,85,247,0.12); color: var(--purple); }
+
+  .pgj-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .pgj-item {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .pgj-item:last-child { border-bottom: none; }
+
+  .pgj-item-head {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-head);
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pgj-item-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .severity {
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  .severity span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .severity.s5 span { background: var(--red); }
+  .severity.s4 span:nth-child(n+2) { background: var(--border); }
+  .severity.s4 span:nth-child(-n+4) { background: var(--orange); }
+  .severity.s3 span:nth-child(-n+3) { background: var(--orange); }
+  .severity.s3 span:nth-child(n+4) { background: var(--border); }
+
+  .gain-level {
+    display: inline-flex;
+    gap: 2px;
+  }
+
+  .gain-level span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .gain-level.g5 span { background: var(--green); }
+  .gain-level.g4 span:nth-child(-n+4) { background: var(--cyan); }
+  .gain-level.g4 span:nth-child(n+5) { background: var(--border); }
+  .gain-level.g3 span:nth-child(-n+3) { background: var(--cyan); }
+  .gain-level.g3 span:nth-child(n+4) { background: var(--border); }
+
+  .aviatrix-answer {
+    margin-top: 28px;
+    background: linear-gradient(135deg, rgba(0,210,255,0.04), rgba(168,85,247,0.04));
+    border: 1px solid rgba(0,210,255,0.12);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .aviatrix-answer-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .aviatrix-answer-header::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  .answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .answer-card {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .answer-card-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .answer-card-val {
+    font-size: 13px;
+    color: var(--text-head);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 24px 0;
+  }
+
+  @media (max-width: 1000px) {
+    .persona-hero { grid-template-columns: 1fr; }
+    .pgj-grid { grid-template-columns: 1fr; }
+    .answer-grid { grid-template-columns: 1fr; }
+    .header, .tab-bar, .tab-panels { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="logo-mark">A</div>
+    <h1>aviatrix<span>.bet</span></h1>
+  </div>
+  <div class="page-sub">B2B Customer Personas — Pains · Gains · Jobs-to-be-Done</div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" data-tab="0">01 · Tier-1 Operator</button>
+  <button class="tab" data-tab="1">02 · Mid-Market Operator</button>
+  <button class="tab" data-tab="2">03 · Game Aggregator</button>
+  <button class="tab" data-tab="3">04 · Crypto Casino</button>
+</div>
+
+<div class="tab-panels">
+
+<!-- ===================== PERSONA 1 ===================== -->
+<div class="panel active" data-panel="0">
+
+  <div class="persona-hero">
+    <div class="persona-id">
+      <div class="persona-avatar" style="background:linear-gradient(135deg,#1e40af,#3b82f6);">M</div>
+      <div class="persona-name">Marcus Lindqvist</div>
+      <div class="persona-role">Head of Casino, Tier-1 Licensed Operator</div>
+      <div class="persona-stats">
+        <div class="stat-row"><span class="stat-label">Company size</span><span class="stat-val">500–2,000 staff</span></div>
+        <div class="stat-row"><span class="stat-label">Licenses</span><span class="stat-val">MGA, UKGC, Ontario</span></div>
+        <div class="stat-row"><span class="stat-label">Monthly GGR</span><span class="stat-val">€30M–€120M</span></div>
+        <div class="stat-row"><span class="stat-label">Crash share of GGR</span><span class="stat-val">~4% (wants 10%+)</span></div>
+        <div class="stat-row"><span class="stat-label">Primary KPI</span><span class="stat-val">Player LTV & NGR margin</span></div>
+        <div class="stat-row"><span class="stat-label">Decision speed</span><span class="stat-val">Slow (6–12 wk review)</span></div>
+      </div>
+    </div>
+    <div class="persona-quote-box">
+      <div class="persona-quote">Crash is our fastest-growing category but every provider gives me the same game in a different skin. I can't differentiate on crash — my competitors have the same Spribe/Turbo games I do.</div>
+      <div class="persona-context">Marcus manages a portfolio of 4,000+ slots and 80+ live tables. Crash games are high-margin and attract a younger demo he's struggling to retain, but current crash offerings are interchangeable. He needs something that makes players choose <em>his</em> platform for crash specifically, not just whoever has the best deposit bonus.</div>
+    </div>
+  </div>
+
+  <div class="pgj-grid">
+    <div class="pgj-col col-pains">
+      <div class="pgj-header">
+        <div class="pgj-icon">✕</div>
+        <div class="pgj-title">Pains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Zero differentiation in crash <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Every operator has the same 3-4 crash games. No exclusivity, no moat. Players switch for better bonuses.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Crash players churn fast <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">No persistent identity or progression in crash — sessions are isolated. Average crash player lifetime is 2–3 months vs. 8+ for slots.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Regulatory risk on novel mechanics <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">UKGC & MGA scrutiny on social features — needs any new mechanic pre-certified and compliant with responsible gambling.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Can't attract Gen-Z organically <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Brand is built for 30+ slots players. Crash is his best Gen-Z hook but current UX feels dated to that demo.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Integration complexity budget <span class="severity s3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Devs are overloaded with sportsbook migration. New game integrations need to be API-standard and low-effort.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-gains">
+      <div class="pgj-header">
+        <div class="pgj-icon">↑</div>
+        <div class="pgj-title">Gains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Exclusive social crash product <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">A crash experience competitors can't replicate — Crews, Squads, Survivor Lobbies as platform-exclusive features.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">2–3x crash player LTV <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Social bonds (Squads, Crews) and progression (Flight Records) create switching costs that extend player lifetime.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Organic acquisition via share loops <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Black Box shares and Crew invite links bring new players at near-zero CAC — branded to his platform.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Young demo credibility <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">TikTok-native sharing, streamer lobbies, and tournament formats signal "this casino gets Gen-Z."</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Pre-certified compliance <span class="gain-level g3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Social mechanics arrive GLI-certified — no extra compliance overhead for his legal team.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-jobs">
+      <div class="pgj-header">
+        <div class="pgj-icon">→</div>
+        <div class="pgj-title">Jobs-to-be-Done</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Grow crash from 4% to 10%+ of GGR</div>
+        <div class="pgj-item-desc">Needs a crash product compelling enough to drive habitual play, not just trial sessions.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Reduce CPA for 18–28 segment</div>
+        <div class="pgj-item-desc">Current CPA for young players is €80–€120. Needs a viral channel that undercuts paid acquisition.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Increase sessions per player per week</div>
+        <div class="pgj-item-desc">Crash players average 2.1 sessions/wk. Wants 4+ via scheduled tournaments and Squad play.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Justify crash investment to board</div>
+        <div class="pgj-item-desc">Needs clear ROI narrative: social crash → higher LTV, lower CAC, younger demo, category exclusivity.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Launch fast with minimal dev lift</div>
+        <div class="pgj-item-desc">Integration must work via standard GCI/RGS API. No custom backend work from his team.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aviatrix-answer">
+    <div class="aviatrix-answer-header">How Aviatrix Answers This Persona</div>
+    <div class="answer-grid">
+      <div class="answer-card">
+        <div class="answer-card-label">Differentiation Play</div>
+        <div class="answer-card-val">Exclusive Squad & Survivor Lobby configs per operator — his players build social identity on <em>his</em> platform, creating lock-in competitors can't match.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">LTV Extension</div>
+        <div class="answer-card-val">Squad Communal Shield + Crew Flight Records create switching costs. Leaving means abandoning your group's streak, status, and safety net.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Acquisition Engine</div>
+        <div class="answer-card-val">Operator-branded Black Box cards & Crash Clips carry his logo. Every share is a free branded ad with a deep-link back to his platform.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Integration Path</div>
+        <div class="answer-card-val">Standard RGS/GCI API, pre-certified by GLI for MGA & UKGC. Plug-and-play — no custom backend. Social layer runs on Aviatrix infra.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PERSONA 2 ===================== -->
+<div class="panel" data-panel="1">
+
+  <div class="persona-hero">
+    <div class="persona-id">
+      <div class="persona-avatar" style="background:linear-gradient(135deg,#b45309,#f59e0b);">S</div>
+      <div class="persona-name">Sofia Petrova</div>
+      <div class="persona-role">CEO, Mid-Market Online Casino</div>
+      <div class="persona-stats">
+        <div class="stat-row"><span class="stat-label">Company size</span><span class="stat-val">40–120 staff</span></div>
+        <div class="stat-row"><span class="stat-label">Licenses</span><span class="stat-val">Curaçao (MGA pending)</span></div>
+        <div class="stat-row"><span class="stat-label">Monthly GGR</span><span class="stat-val">€1M–€8M</span></div>
+        <div class="stat-row"><span class="stat-label">Markets</span><span class="stat-val">LatAm, Africa, CIS</span></div>
+        <div class="stat-row"><span class="stat-label">Primary KPI</span><span class="stat-val">Player volume & CPA</span></div>
+        <div class="stat-row"><span class="stat-label">Decision speed</span><span class="stat-val">Fast (1–3 weeks)</span></div>
+      </div>
+    </div>
+    <div class="persona-quote-box">
+      <div class="persona-quote">I'm spending €60 per depositing player on Facebook ads and they play for two weeks and leave. I need games that bring players to me, not games I have to push players toward.</div>
+      <div class="persona-context">Sofia runs a lean operation competing against well-funded Tier-1s in high-growth emerging markets. Her advantage is speed and willingness to try new products. Her biggest constraint is marketing budget — she can't outspend competitors on paid acquisition. She needs products that generate their own traffic.</div>
+    </div>
+  </div>
+
+  <div class="pgj-grid">
+    <div class="pgj-col col-pains">
+      <div class="pgj-header">
+        <div class="pgj-icon">✕</div>
+        <div class="pgj-title">Pains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Unsustainable CPA economics <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Paid acquisition costs rising 20% YoY. Can't compete with Tier-1 ad spend on Google/Meta in her markets.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">No organic growth flywheel <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Current game portfolio generates zero word-of-mouth. Every player costs money to acquire individually.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Streamer deals too expensive <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Top crash streamers demand €15K–€50K/month guarantees. ROI is hard to measure and inconsistent.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Same game catalog as everyone <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Her aggregator gives her the same Spribe, Turbo, SmartSoft games every competitor has. Zero moat.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">WhatsApp/Telegram-heavy markets <span class="severity s3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Her players live on messaging apps. No current game mechanic leverages this as a distribution channel.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-gains">
+      <div class="pgj-header">
+        <div class="pgj-icon">↑</div>
+        <div class="pgj-title">Gains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Self-distributing game product <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Crew invite links on WhatsApp = free player acquisition through the exact channel her players already use.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">CPA drops to near-zero at scale <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Each active player recruits 1–3 friends via Crew invites. Viral coefficient >1 means organic growth compounds.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Affordable streamer activation <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Pilot's Seat gives mid-tier streamers a reason to play on her platform — the feature is the draw, not the guarantee.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">LatAm & Africa-native virality <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Black Box cards on WhatsApp Status + QR deep-links are built for how her markets actually share content.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Compete above weight class <span class="gain-level g3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Social crash features make her platform feel premium & innovative vs. competitors with bigger budgets.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-jobs">
+      <div class="pgj-header">
+        <div class="pgj-icon">→</div>
+        <div class="pgj-title">Jobs-to-be-Done</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Get CPA under €20</div>
+        <div class="pgj-item-desc">Needs organic/viral channels that cut paid acquisition dependency by 60%+.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Build a retention moat</div>
+        <div class="pgj-item-desc">Players need a reason to stay that isn't just deposit bonuses — social identity & crew investment.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Win in WhatsApp-first markets</div>
+        <div class="pgj-item-desc">Needs game mechanics designed for messaging-app sharing, not desktop browser play.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Attract streamers without big guarantees</div>
+        <div class="pgj-item-desc">Needs features so compelling that mid-tier streamers want to play for the content, not just the paycheck.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Scale to MGA with proof of traction</div>
+        <div class="pgj-item-desc">Needs strong revenue metrics from Curaçao to fund MGA licensing and enter regulated EU markets.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aviatrix-answer">
+    <div class="aviatrix-answer-header">How Aviatrix Answers This Persona</div>
+    <div class="answer-grid">
+      <div class="answer-card">
+        <div class="answer-card-label">Viral Growth Engine</div>
+        <div class="answer-card-val">Crew invite links + Black Box QR codes on WhatsApp Status turn every active player into a recruiter. Designed for LatAm & Africa messaging habits.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Streamer Economics</div>
+        <div class="answer-card-val">Pilot's Seat is compelling content — mid-tier streamers will play for the feature, not the guarantee. She pays performance-based, not fixed.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Retention Mechanics</div>
+        <div class="answer-card-val">Crews and Squads create social debt. Players who recruit friends into their Crew don't churn — they've built something on her platform.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Speed to Market</div>
+        <div class="answer-card-val">Fast integration via aggregator or direct RGS. First Survivor Lobby tournament can run within 2 weeks of going live.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PERSONA 3 ===================== -->
+<div class="panel" data-panel="2">
+
+  <div class="persona-hero">
+    <div class="persona-id">
+      <div class="persona-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">D</div>
+      <div class="persona-name">Daniel Obeng</div>
+      <div class="persona-role">VP Product, Game Aggregator / Platform</div>
+      <div class="persona-stats">
+        <div class="stat-row"><span class="stat-label">Company size</span><span class="stat-val">80–300 staff</span></div>
+        <div class="stat-row"><span class="stat-label">Operator clients</span><span class="stat-val">200–600 casinos</span></div>
+        <div class="stat-row"><span class="stat-label">Games in portfolio</span><span class="stat-val">8,000–15,000</span></div>
+        <div class="stat-row"><span class="stat-label">Crash games live</span><span class="stat-val">12–20 titles</span></div>
+        <div class="stat-row"><span class="stat-label">Primary KPI</span><span class="stat-val">Operator adoption & GGR share</span></div>
+        <div class="stat-row"><span class="stat-label">Decision speed</span><span class="stat-val">Medium (4–6 weeks)</span></div>
+      </div>
+    </div>
+    <div class="persona-quote-box">
+      <div class="persona-quote">I have 15 crash games in my portfolio and operators only activate 3. They all look the same. I need something that makes operators <em>request</em> integration instead of me pushing it.</div>
+      <div class="persona-context">Daniel curates the game catalog that 400+ operators access through a single API. His business model is a revenue share on GGR flowing through his platform. He needs games that operators actively want and that generate outsized GGR compared to the integration effort. Crash is a growing category, but current titles are commoditized.</div>
+    </div>
+  </div>
+
+  <div class="pgj-grid">
+    <div class="pgj-col col-pains">
+      <div class="pgj-header">
+        <div class="pgj-icon">✕</div>
+        <div class="pgj-title">Pains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Crash titles are commoditized <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">All crash games feel identical — same curve, same bet/cashout UX. Operators see no reason to activate a 16th crash game.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Low operator activation rate <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Onboards a new crash game → only 15–20% of operators bother activating it. Rest ignore the email.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">No cross-operator network effects <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Each operator runs crash games in isolation. No shared liquidity, no cross-platform tournaments, no aggregator-level value-add.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Margin pressure from providers <span class="severity s3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Top crash providers demand lower aggregator share because their games are "must-have." Bargaining power is shifting.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-gains">
+      <div class="pgj-header">
+        <div class="pgj-icon">↑</div>
+        <div class="pgj-title">Gains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Category-defining crash title <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">A crash game so differentiated that operators request it by name — drives inbound demand instead of outbound sales.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Cross-operator tournament network <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Survivor Lobbies with shared player pools across operators create network effects that make his aggregator indispensable.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Higher GGR per integration <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Social mechanics drive 3–5x session frequency. More play = more GGR = more aggregator revenue per operator.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Content marketing powered by players <span class="gain-level g3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">"Best Black Box of the Week" across all operators = aggregator-branded content engine showcasing his network.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-jobs">
+      <div class="pgj-header">
+        <div class="pgj-icon">→</div>
+        <div class="pgj-title">Jobs-to-be-Done</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Get 60%+ operator activation on new crash title</div>
+        <div class="pgj-item-desc">Needs a game compelling enough that operators self-activate without sales follow-up.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Build aggregator-level network effects</div>
+        <div class="pgj-item-desc">Cross-operator tournaments and shared leaderboards make his platform more valuable than any single game.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Increase wallet share from crash category</div>
+        <div class="pgj-item-desc">Crash is 6% of his total GGR. Social crash could push it to 12–15% with the right product.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Differentiate from competing aggregators</div>
+        <div class="pgj-item-desc">Exclusive or early access to social crash gives him a reason operators choose his platform over alternatives.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aviatrix-answer">
+    <div class="aviatrix-answer-header">How Aviatrix Answers This Persona</div>
+    <div class="answer-grid">
+      <div class="answer-card">
+        <div class="answer-card-label">Operator Pull</div>
+        <div class="answer-card-val">Survivor Lobbies and Crew mechanics are so visually different from existing crash that operators request activation proactively after seeing one demo.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Network Effect Layer</div>
+        <div class="answer-card-val">Cross-operator Survivor tournaments pool players across his network — more operators = bigger lobbies = better experience = more operators want in.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Aggregator Branding</div>
+        <div class="answer-card-val">Weekly "Best Black Box" showcase features rounds from across his operator network — positions his platform as the home of social crash.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Commercial Upside</div>
+        <div class="answer-card-val">Higher GGR per operator means higher aggregator rev-share. Social crash can become his highest-yielding category per integration slot.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PERSONA 4 ===================== -->
+<div class="panel" data-panel="3">
+
+  <div class="persona-hero">
+    <div class="persona-id">
+      <div class="persona-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">K</div>
+      <div class="persona-name">Kai Nakamura</div>
+      <div class="persona-role">Founder, Crypto-Native Casino</div>
+      <div class="persona-stats">
+        <div class="stat-row"><span class="stat-label">Company size</span><span class="stat-val">10–40 staff</span></div>
+        <div class="stat-row"><span class="stat-label">Licenses</span><span class="stat-val">Curaçao / unlicensed</span></div>
+        <div class="stat-row"><span class="stat-label">Monthly volume</span><span class="stat-val">$2M–$30M wagered</span></div>
+        <div class="stat-row"><span class="stat-label">Markets</span><span class="stat-val">Global, crypto-first</span></div>
+        <div class="stat-row"><span class="stat-label">Primary KPI</span><span class="stat-val">Wager volume & virality</span></div>
+        <div class="stat-row"><span class="stat-label">Decision speed</span><span class="stat-val">Instant (1–5 days)</span></div>
+      </div>
+    </div>
+    <div class="persona-quote-box">
+      <div class="persona-quote">My players care about three things: provably fair, degen energy, and flex. Give me a game that lets them show off and compete with their Discord crew.</div>
+      <div class="persona-context">Kai runs a fast-moving crypto casino that competes on culture and speed, not regulation. His players are crypto-native, risk-tolerant, and community-driven. They live on Discord and Twitter/X. He needs products that generate organic content and feed his community's competitive energy.</div>
+    </div>
+  </div>
+
+  <div class="pgj-grid">
+    <div class="pgj-col col-pains">
+      <div class="pgj-header">
+        <div class="pgj-icon">✕</div>
+        <div class="pgj-title">Pains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Crash is already "basic" to his users <span class="severity s5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Crypto players have been playing crash since Bustabit (2014). Standard crash is stale. They want the next evolution.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Community content is manual <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Players screenshot wins and post to Discord/X manually. No automated content pipeline despite massive community sharing culture.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">No competitive structure <span class="severity s4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Discord community has strong competitive energy but crash has no native PvP format. Running manual tournaments is a pain.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Retention without bonuses <span class="severity s3"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Rakeback and deposit bonuses eat margin. Needs intrinsic retention mechanics, not just financial incentives.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-gains">
+      <div class="pgj-header">
+        <div class="pgj-icon">↑</div>
+        <div class="pgj-title">Gains</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">"Next-gen crash" narrative <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Being first to offer social crash = major clout. His CT audience will amplify the launch as "the future of crash."</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Automated content engine <span class="gain-level g5"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Black Box + Crash Clips auto-generate shareable assets. His Discord becomes a 24/7 content feed with zero effort.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Survivor Lobbies as events <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Hourly tournaments give his Discord community scheduled events — "everyone in the 9pm Survivor" becomes culture.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Crew leaderboards as flex <span class="gain-level g4"><span></span><span></span><span></span><span></span><span></span></span></div>
+        <div class="pgj-item-desc">Flight Records and crew rankings give degens something to screenshot and flex on X. Status > money for this demo.</div>
+      </div>
+    </div>
+
+    <div class="pgj-col col-jobs">
+      <div class="pgj-header">
+        <div class="pgj-icon">→</div>
+        <div class="pgj-title">Jobs-to-be-Done</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Re-energize crash category</div>
+        <div class="pgj-item-desc">Needs a crash product that feels genuinely new to players who've been playing since Bustabit.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Turn Discord into a growth engine</div>
+        <div class="pgj-item-desc">Auto-generated content (clips, replays) that Discord members share externally, bringing in new users.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Run tournaments without ops overhead</div>
+        <div class="pgj-item-desc">Currently runs manual tourneys via Google Sheets. Needs native tournament infra with auto prize distribution.</div>
+      </div>
+      <div class="pgj-item">
+        <div class="pgj-item-head">Ship fast, iterate faster</div>
+        <div class="pgj-item-desc">Wants to be live in days, not months. Will test features with community and feed back requests immediately.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aviatrix-answer">
+    <div class="aviatrix-answer-header">How Aviatrix Answers This Persona</div>
+    <div class="answer-grid">
+      <div class="answer-card">
+        <div class="answer-card-label">Culture Fit</div>
+        <div class="answer-card-val">Crew competition, Flight Record flex, and Survivor Lobbies match crypto-native culture perfectly — competitive, status-driven, community-first.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Content Automation</div>
+        <div class="answer-card-val">Crash Clips + Black Box auto-post to Discord channels. His community generates its own marketing 24/7 without mod effort.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Zero-Ops Tournaments</div>
+        <div class="answer-card-val">Survivor Lobbies run on a schedule with automated brackets, prize distribution, and leaderboard updates. No Google Sheets needed.</div>
+      </div>
+      <div class="answer-card">
+        <div class="answer-card-label">Integration Speed</div>
+        <div class="answer-card-val">Lightweight API, crypto-native payment rails already supported. Can go live in under a week with full feature set.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

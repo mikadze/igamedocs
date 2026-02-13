@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — Value Proposition Canvas + Ideation</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080d;--surface:#101018;--surface2:#16161f;--border:#1c1c2c;--text:#d8d8e4;--text-dim:#6a6a80;--text-head:#f0f0f6;--red:#e84545;--orange:#f7a733;--cyan:#00d2ff;--green:#22c55e;--purple:#a855f7;--pink:#ec4899;--yellow:#eab308}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")}
+.header{padding:44px 48px 28px;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--red),var(--orange));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff}
+.brand h1{font-family:'Space Mono',monospace;font-size:22px;color:var(--text-head)}
+.brand h1 span{color:var(--red)}
+.page-sub{font-size:11px;color:var(--text-dim);font-family:'Space Mono',monospace;letter-spacing:2.5px;text-transform:uppercase;padding-left:50px}
+.content{padding:32px 48px 64px;max-width:1500px;margin:0 auto}
+.sl{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sl::before{content:'';width:8px;height:8px;border-radius:50%}
+.sl.c::before{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.sl.p::before{background:var(--purple);box-shadow:0 0 8px var(--purple)}
+.sl.y::before{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+.st{font-size:24px;font-weight:700;color:var(--text-head);margin-bottom:6px}
+.sd{font-size:13.5px;color:var(--text-dim);margin-bottom:28px;max-width:780px;line-height:1.6}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:44px 0}
+
+.vp-canvas{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:12px}
+.vp-side{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;position:relative;overflow:hidden}
+.vp-side::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.vp-customer::before{background:linear-gradient(90deg,var(--red),var(--orange))}
+.vp-product::before{background:linear-gradient(90deg,var(--cyan),var(--green))}
+.vp-sl{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.vp-customer .vp-sl{color:var(--orange)}
+.vp-product .vp-sl{color:var(--cyan)}
+.vp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.vp-block{background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.04);border-radius:10px;padding:16px}
+.vp-bl{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.vp-bl .d{width:6px;height:6px;border-radius:50%}
+.pl{color:var(--red)}.pl .d{background:var(--red)}
+.gl{color:var(--green)}.gl .d{background:var(--green)}
+.jl{color:var(--orange)}.jl .d{background:var(--orange)}
+.prl{color:var(--cyan)}.prl .d{background:var(--cyan)}
+.crl{color:var(--purple)}.crl .d{background:var(--purple)}
+.rl{color:var(--green)}.rl .d{background:var(--green)}
+.vi{font-size:12px;line-height:1.5;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.03);color:var(--text)}
+.vi:last-child{border-bottom:none}
+.vi strong{color:var(--text-head);font-weight:600}
+.vc{display:flex;justify-content:center;margin:-8px 0 4px;font-size:10px;font-family:'Space Mono',monospace;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase}
+
+.ig{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ic{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 20px;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.2s}
+.ic:hover{transform:translateY(-2px)}
+.ic::before{content:'';position:absolute;top:0;left:0;width:3px;bottom:0;border-radius:12px 0 0 12px}
+.ic.tc::before{background:var(--green)}.ic.te::before{background:var(--cyan)}.ic.tw::before{background:var(--purple)}.ic.tm::before{background:var(--pink)}
+.it{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.tc .it{color:var(--green)}.te .it{color:var(--cyan)}.tw .it{color:var(--purple)}.tm .it{color:var(--pink)}
+.in{font-size:15px;font-weight:700;color:var(--text-head);margin-bottom:5px}
+.id{font-size:12.5px;color:var(--text-dim);line-height:1.55;margin-bottom:12px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.tg{font-size:9px;font-family:'Space Mono',monospace;letter-spacing:0.8px;padding:3px 7px;border-radius:4px;text-transform:uppercase}
+.tg-r{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.15)}
+.tg-a{background:rgba(0,210,255,0.1);color:var(--cyan);border:1px solid rgba(0,210,255,0.15)}
+.tg-m{background:rgba(247,183,51,0.1);color:var(--orange);border:1px solid rgba(247,183,51,0.15)}
+.tg-s{background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.15)}
+.tg-d{background:rgba(232,69,69,0.1);color:var(--red);border:1px solid rgba(232,69,69,0.15)}
+.tg-f{background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08)}
+.is{font-size:11px;color:var(--text-dim);line-height:1.5;padding-top:10px;border-top:1px solid rgba(255,255,255,0.04)}
+.is strong{color:var(--text);font-weight:500}
+
+.tl{display:flex;gap:24px;margin-bottom:24px;flex-wrap:wrap}
+.tli{display:flex;align-items:center;gap:8px;font-size:11px;font-family:'Space Mono',monospace;letter-spacing:0.5px}
+.td{width:10px;height:10px;border-radius:3px}
+
+.sb{display:flex;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:20px}
+.ss{display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.7)}
+.ss:nth-child(1){background:rgba(34,197,94,0.15);flex:3}
+.ss:nth-child(2){background:rgba(0,210,255,0.12);flex:4}
+.ss:nth-child(3){background:rgba(168,85,247,0.1);flex:3}
+.ss:nth-child(4){background:rgba(236,72,153,0.08);flex:2}
+
+@media(max-width:1100px){.vp-canvas{grid-template-columns:1fr}.vp-row{grid-template-columns:1fr}.ig{grid-template-columns:1fr}.content{padding:24px 20px}.header{padding:32px 20px 24px}}
+</style>
+</head>
+<body>
+<div class="header">
+<div class="brand"><div class="logo-mark">A</div><h1>aviatrix<span>.bet</span></h1></div>
+<div class="page-sub">Value Proposition Canvas + Feature Ideation Lab</div>
+</div>
+
+<div class="content">
+
+<div class="sl c">Value Proposition Canvas</div>
+<div class="st">B2B Operator Profile ↔ Aviatrix Product Fit</div>
+<div class="sd">Left: what operators need. Right: how we deliver. Yellow highlights = gaps where new ideas should land. These gaps drove the ideation below.</div>
+
+<div class="vp-canvas">
+<div class="vp-side vp-customer">
+<div class="vp-sl">Customer Profile — Operators & Aggregators</div>
+<div class="vp-row">
+<div class="vp-block">
+<div class="vp-bl pl"><span class="d"></span> Pains</div>
+<div class="vi"><strong>P1.</strong> Crash games are commoditized — no moat</div>
+<div class="vi"><strong>P2.</strong> Players churn in 2–3 months</div>
+<div class="vi"><strong>P3.</strong> CPA rising 20% YoY</div>
+<div class="vi"><strong>P4.</strong> Can't reach Gen-Z organically</div>
+<div class="vi"><strong>P5.</strong> Streamer deals expensive & ROI unclear</div>
+<div class="vi"><strong>P6.</strong> Regulatory risk on novel mechanics</div>
+<div class="vi"><strong>P7.</strong> No spectator format — not content-ready</div>
+<div class="vi"><strong>P8.</strong> Sessions isolated — no continuity</div>
+</div>
+<div class="vp-block">
+<div class="vp-bl gl"><span class="d"></span> Gains</div>
+<div class="vi"><strong>G1.</strong> Exclusive product competitors can't replicate</div>
+<div class="vi"><strong>G2.</strong> 2–3x player LTV via social lock-in</div>
+<div class="vi"><strong>G3.</strong> Near-zero marginal CAC at scale</div>
+<div class="vi"><strong>G4.</strong> Platform perceived as innovative by youth</div>
+<div class="vi"><strong>G5.</strong> Streamers want feature, not the fee</div>
+<div class="vi"><strong>G6.</strong> Pre-certified = no compliance overhead</div>
+<div class="vi"><strong>G7.</strong> Content-ready format for streaming platforms</div>
+<div class="vi"><strong>G8.</strong> Players build persistent identity here</div>
+</div>
+<div class="vp-block">
+<div class="vp-bl jl"><span class="d"></span> Jobs-to-be-Done</div>
+<div class="vi"><strong>J1.</strong> Grow crash from 4% to 10%+ of GGR</div>
+<div class="vi"><strong>J2.</strong> Retain players beyond 90 days</div>
+<div class="vi"><strong>J3.</strong> Acquire players under €20 CPA</div>
+<div class="vi"><strong>J4.</strong> Win in WhatsApp/Telegram-first markets</div>
+<div class="vi"><strong>J5.</strong> Create appointment play (daily return)</div>
+<div class="vi"><strong>J6.</strong> Generate marketing content without budget</div>
+<div class="vi"><strong>J7.</strong> Differentiate from 4,000+ slots</div>
+<div class="vi"><strong>J8.</strong> Monetize beyond base house edge</div>
+</div>
+</div>
+</div>
+
+<div class="vp-side vp-product">
+<div class="vp-sl">Value Map — Aviatrix Product</div>
+<div class="vp-row">
+<div class="vp-block">
+<div class="vp-bl rl"><span class="d"></span> Pain Relievers</div>
+<div class="vi"><strong>→P1.</strong> Social layer can't be copied by reskinning</div>
+<div class="vi"><strong>→P2.</strong> Social debt: leave = lose crew, streak, rank</div>
+<div class="vi"><strong>→P3.</strong> Crew invite links = peer-to-peer acquisition</div>
+<div class="vi"><strong>→P4.</strong> TikTok-native clips + share-to-play</div>
+<div class="vi"><strong>→P5.</strong> Pilot's Seat is the content draw</div>
+<div class="vi"><strong>→P6.</strong> GLI-certified social mechanics from day one</div>
+<div class="vi"><strong>→P7.</strong> Survivor Lobbies = spectator format</div>
+<div class="vi"><strong>→P8.</strong> <em style="color:var(--yellow)">Gap — needs session-linking ideas ↓</em></div>
+</div>
+<div class="vp-block">
+<div class="vp-bl crl"><span class="d"></span> Gain Creators</div>
+<div class="vi"><strong>→G1.</strong> 11 unique features no competitor has</div>
+<div class="vi"><strong>→G2.</strong> Squad Shield + Crew streaks = switching cost</div>
+<div class="vi"><strong>→G3.</strong> Black Box → QR → play → share loop</div>
+<div class="vi"><strong>→G4.</strong> Crash Clips w/ branded watermark</div>
+<div class="vi"><strong>→G5.</strong> Pilot's Seat analytics + lobby SDK</div>
+<div class="vi"><strong>→G6.</strong> Standard RGS/GCI API — plug and play</div>
+<div class="vi"><strong>→G7.</strong> 100→1 elimination = narrative content</div>
+<div class="vi"><strong>→G8.</strong> <em style="color:var(--yellow)">Gap — identity system needs deepening ↓</em></div>
+</div>
+<div class="vp-block">
+<div class="vp-bl prl"><span class="d"></span> Products & Services</div>
+<div class="vi"><strong>Core:</strong> Social crash game engine</div>
+<div class="vi"><strong>Social:</strong> Crews, Squads, Copy-Bet, Survivor Lobbies</div>
+<div class="vi"><strong>Distribution:</strong> Black Box, Crash Clips, Crew links</div>
+<div class="vi"><strong>Streamer:</strong> Pilot's Seat, lobby hosting, analytics</div>
+<div class="vi"><strong>B2B:</strong> White-label API, operator-branded sharing</div>
+<div class="vi"><strong>Cosmetics:</strong> NFT planes, Hangar skins</div>
+<div class="vi"><strong>Tournaments:</strong> Survivor w/ auto prize mgmt</div>
+<div class="vi"><strong style="color:var(--yellow)">New ideas needed ↓</strong></div>
+</div>
+</div>
+</div>
+</div>
+<div class="vc">← pain↔reliever · gain↔creator · yellow = gaps to fill →</div>
+
+<div class="divider"></div>
+
+<div class="sl p">Feature Ideation Lab</div>
+<div class="st">18 Ideas Across the Disruption Spectrum</div>
+<div class="sd">Sorted into four tiers: confirmed bets (validated by VP canvas), high-potential explorations, wild-card mechanics, and moonshots that could redefine the category.</div>
+
+<div class="sb">
+<div class="ss">Confirmed (5)</div>
+<div class="ss">Explore (5)</div>
+<div class="ss">Wild Card (5)</div>
+<div class="ss">Moonshot (3)</div>
+</div>
+
+<div class="tl">
+<div class="tli"><div class="td" style="background:var(--green)"></div><span style="color:var(--green)">Confirmed</span> — build now</div>
+<div class="tli"><div class="td" style="background:var(--cyan)"></div><span style="color:var(--cyan)">Explore</span> — needs design</div>
+<div class="tli"><div class="td" style="background:var(--purple)"></div><span style="color:var(--purple)">Wild Card</span> — high ceiling</div>
+<div class="tli"><div class="td" style="background:var(--pink)"></div><span style="color:var(--pink)">Moonshot</span> — category-redefining</div>
+</div>
+
+<div class="ig">
+
+<div class="ic tc">
+<div class="it">● Confirmed</div>
+<div class="in">Crew System (2–5 Friends)</div>
+<div class="id">Shareable invite link, group bonus if all cash out, real-time visibility of positions. "Don't crash us" social pressure is the emotional core.</div>
+<div class="tags"><span class="tg tg-a">Acquisition</span><span class="tg tg-r">Retention</span></div>
+<div class="is"><strong>Solves:</strong> P1, P2, P3 · <strong>Creates:</strong> G2, G3 · <strong>Job:</strong> J2, J3, J4</div>
+</div>
+
+<div class="ic tc">
+<div class="it">● Confirmed</div>
+<div class="in">Black Box Replay Cards</div>
+<div class="id">Auto-generated 9:16 shareable graphic after every round. Entry point, curve, cash-out moment, result. QR deep-links back to game.</div>
+<div class="tags"><span class="tg tg-a">Acquisition</span><span class="tg tg-s">Spectacle</span></div>
+<div class="is"><strong>Solves:</strong> P3, P4, P7 · <strong>Creates:</strong> G3, G4 · <strong>Job:</strong> J3, J6</div>
+</div>
+
+<div class="ic tc">
+<div class="it">● Confirmed</div>
+<div class="in">Survivor Lobbies (100→1)</div>
+<div class="id">Elimination tournament. 100 enter, bottom half cut each round. Narrative arc. Hourly scheduling = appointment play.</div>
+<div class="tags"><span class="tg tg-s">Spectacle</span><span class="tg tg-m">Monetization</span></div>
+<div class="is"><strong>Solves:</strong> P7, P8 · <strong>Creates:</strong> G7 · <strong>Job:</strong> J1, J5, J7</div>
+</div>
+
+<div class="ic tc">
+<div class="it">● Confirmed</div>
+<div class="in">Copy-Bet / Follow Pilot</div>
+<div class="id">One-click mirror a streamer's cash-out. Reduces decision anxiety. Converts passive viewers into active bettors instantly.</div>
+<div class="tags"><span class="tg tg-a">Acquisition</span><span class="tg tg-d">Differentiation</span></div>
+<div class="is"><strong>Solves:</strong> P4, P5 · <strong>Creates:</strong> G5 · <strong>Job:</strong> J1, J3</div>
+</div>
+
+<div class="ic tc">
+<div class="it">● Confirmed</div>
+<div class="in">Squad Hangar + Communal Shield</div>
+<div class="id">Guild-style persistent groups. Visual hub. Shield saves 10% on low-crash rounds when Squad plays together.</div>
+<div class="tags"><span class="tg tg-r">Retention</span><span class="tg tg-d">Differentiation</span></div>
+<div class="is"><strong>Solves:</strong> P1, P2 · <strong>Creates:</strong> G1, G2, G8 · <strong>Job:</strong> J2, J7</div>
+</div>
+
+<div class="ic te">
+<div class="it">◆ Explore</div>
+<div class="in">Battle Pass / Season System</div>
+<div class="id">30-day progression track. Earn XP from rounds, crew wins, Survivor finishes. Free + premium tier. Unlock cosmetics, Hangar items, tournament tickets.</div>
+<div class="tags"><span class="tg tg-r">Retention</span><span class="tg tg-m">Monetization</span><span class="tg tg-f">Reg-friendly</span></div>
+<div class="is"><strong>Solves:</strong> P2, P8 · <strong>Creates:</strong> G8 · <strong>Job:</strong> J2, J5, J8 · <strong>Fills gap:</strong> session-linking + identity</div>
+</div>
+
+<div class="ic te">
+<div class="it">◆ Explore</div>
+<div class="in">Side Bets on Friends</div>
+<div class="id">Micro-wager on whether your crewmate cashes out or crashes. "I bet Sofia crashes before 2x." Separate from main bet. Meta-game between friends.</div>
+<div class="tags"><span class="tg tg-m">Monetization</span><span class="tg tg-s">Spectacle</span></div>
+<div class="is"><strong>Solves:</strong> P8 · <strong>Creates:</strong> G2 · <strong>Job:</strong> J1, J8 · <strong>Risk:</strong> May need separate certification</div>
+</div>
+
+<div class="ic te">
+<div class="it">◆ Explore</div>
+<div class="in">Daily Missions / Quest Board</div>
+<div class="id">"Cash out above 5x three times." "Play 5 rounds with Crew." "Top 10 in Survivor." Rewards: XP, cosmetics, free bets. Creates daily habit loop.</div>
+<div class="tags"><span class="tg tg-r">Retention</span><span class="tg tg-f">Reg-friendly</span></div>
+<div class="is"><strong>Solves:</strong> P2, P8 · <strong>Creates:</strong> G8 · <strong>Job:</strong> J2, J5 · <strong>Fills gap:</strong> appointment play</div>
+</div>
+
+<div class="ic te">
+<div class="it">◆ Explore</div>
+<div class="in">Crash Insurance / Hedge Mechanic</div>
+<div class="id">Pay 5–15% premium to insure against sub-1.5x crashes. Get 80% back on insured crashes. Operator keeps premium as extra margin. Turns frustration into revenue.</div>
+<div class="tags"><span class="tg tg-d">Differentiation</span><span class="tg tg-m">Monetization</span></div>
+<div class="is"><strong>Solves:</strong> P1 · <strong>Creates:</strong> G1 · <strong>Job:</strong> J7, J8 · <strong>Insight:</strong> Monetizes the worst moment in crash</div>
+</div>
+
+<div class="ic te">
+<div class="it">◆ Explore</div>
+<div class="in">Free-to-Play Prediction Layer</div>
+<div class="id">Non-wagering mode: predict crash above/below threshold. Earn points, climb leaderboard, unlock cosmetics. Converts to real-money when ready. Legal almost everywhere.</div>
+<div class="tags"><span class="tg tg-a">Acquisition</span><span class="tg tg-f">Reg-friendly</span></div>
+<div class="is"><strong>Solves:</strong> P3, P4, P6 · <strong>Creates:</strong> G3, G6 · <strong>Job:</strong> J3 · <strong>Insight:</strong> Top of funnel where crash ads are restricted</div>
+</div>
+
+<div class="ic tw">
+<div class="it">▲ Wild Card</div>
+<div class="in">Volatility Rooms / Mood Selection</div>
+<div class="id">"Chill" (low vol, frequent small wins), "Standard," "Degen" (rare moonshots). Different aesthetics, music, crowd energy. Same edge, different curves. Players self-segment.</div>
+<div class="tags"><span class="tg tg-d">Differentiation</span><span class="tg tg-r">Retention</span></div>
+<div class="is"><strong>Solves:</strong> P1 · <strong>Job:</strong> J7 · <strong>Insight:</strong> Serves casual and degen with one product</div>
+</div>
+
+<div class="ic tw">
+<div class="it">▲ Wild Card</div>
+<div class="in">Ghost Race Challenges</div>
+<div class="id">Replay someone's round and try to beat it. Shared as playable TikTok/Stories challenge. "Can you beat my 47x?" Viewer scans QR → enters Ghost Race → plays the same curve.</div>
+<div class="tags"><span class="tg tg-a">Acquisition</span><span class="tg tg-s">Spectacle</span></div>
+<div class="is"><strong>Solves:</strong> P3, P7 · <strong>Creates:</strong> G3, G7 · <strong>Job:</strong> J3, J6 · <strong>Insight:</strong> Content that is a conversion funnel</div>
+</div>
+
+<div class="ic tw">
+<div class="it">▲ Wild Card</div>
+<div class="in">Live Voice / Reactions in Crews</div>
+<div class="id">Proximity voice chat during rounds. Screams, callouts, peer pressure — audible. "CASH OUT!" becomes a real voice moment. Record & clip audio for sharing.</div>
+<div class="tags"><span class="tg tg-s">Spectacle</span><span class="tg tg-r">Retention</span></div>
+<div class="is"><strong>Solves:</strong> P7, P8 · <strong>Creates:</strong> G7 · <strong>Job:</strong> J7 · <strong>Risk:</strong> Moderation. Start Crew-only (trusted friends)</div>
+</div>
+
+<div class="ic tw">
+<div class="it">▲ Wild Card</div>
+<div class="in">Crash Fantasy League</div>
+<div class="id">Weekly: "draft" 5 players from leaderboard. Score points on their real cash-out performance. Meta-game on top of crash. Entry fee or free tier. Engagement without playing rounds.</div>
+<div class="tags"><span class="tg tg-d">Differentiation</span><span class="tg tg-a">Acquisition</span><span class="tg tg-f">Reg-friendly</span></div>
+<div class="is"><strong>Job:</strong> J5, J7 · <strong>Insight:</strong> Fantasy sports mechanics → engagement even when offline</div>
+</div>
+
+<div class="ic tw">
+<div class="it">▲ Wild Card</div>
+<div class="in">Operator Custom Event Builder</div>
+<div class="id">Dashboard for operators to create custom tournaments: themed lobbies, multiplier ranges, branded visuals, sponsored prizes. "Friday Night €10K Survivor" = operator's signature event.</div>
+<div class="tags"><span class="tg tg-m">Monetization</span><span class="tg tg-d">Differentiation</span></div>
+<div class="is"><strong>Solves:</strong> P1, P5 · <strong>Creates:</strong> G1, G5 · <strong>Job:</strong> J5, J7 · <strong>Insight:</strong> Operators invest more when they co-create</div>
+</div>
+
+<div class="ic tm">
+<div class="it">✦ Moonshot</div>
+<div class="in">AI Co-Pilot (Risk Coach)</div>
+<div class="id">AI learns your risk profile across sessions. Suggests cash-out points, warns when chasing losses, celebrates streaks. Not auto-playing — advising. Responsible gambling as a feature, not a checkbox.</div>
+<div class="tags"><span class="tg tg-d">Differentiation</span><span class="tg tg-f">Reg-friendly</span><span class="tg tg-r">Retention</span></div>
+<div class="is"><strong>Solves:</strong> P6 · <strong>Creates:</strong> G6 · <strong>Job:</strong> J2 · <strong>Angle:</strong> Regulators love it — turns compliance into competitive advantage</div>
+</div>
+
+<div class="ic tm">
+<div class="it">✦ Moonshot</div>
+<div class="in">Open Crash Protocol (B2B2B)</div>
+<div class="id">Publish an open protocol for social crash mechanics that any operator can build on. Aviatrix becomes infrastructure, not just a game. "Stripe for social crash." Win even when competitors build crash games.</div>
+<div class="tags"><span class="tg tg-m">Monetization</span><span class="tg tg-d">Differentiation</span></div>
+<div class="is"><strong>Job:</strong> J1, J8 · <strong>Angle:</strong> Platform play — revenue from the ecosystem, not just your own game</div>
+</div>
+
+<div class="ic tm">
+<div class="it">✦ Moonshot</div>
+<div class="in">Cross-Operator Portable Identity</div>
+<div class="id">NFT plane, rank, cosmetics, and Crew work across every operator running Aviatrix. Player identity isn't tied to one casino. Creates a meta-platform above individual operators.</div>
+<div class="tags"><span class="tg tg-r">Retention</span><span class="tg tg-d">Differentiation</span><span class="tg tg-a">Acquisition</span></div>
+<div class="is"><strong>Solves:</strong> P1, P2 · <strong>Creates:</strong> G1, G2, G8 · <strong>Risk:</strong> Operators may resist — position as network effect that benefits all</div>
+</div>
+
+</div>
+
+<div class="divider"></div>
+
+<div class="sl y">Prioritization Lens</div>
+<div class="st">Four Filters Before Committing Dev</div>
+<div class="sd">Not a ranking — a decision framework. Every idea above should pass through all four before it gets a sprint.</div>
+
+<div class="ig" style="grid-template-columns:repeat(4,1fr)">
+<div class="ic" style="border-color:rgba(232,69,69,0.15)">
+<div class="it" style="color:var(--red)">Filter 01</div>
+<div class="in">Operator Pull</div>
+<div class="id">Would Marcus (Tier-1), Sofia (mid-market), or Daniel (aggregator) pay more for this? If no persona cares, shelve it.</div>
+</div>
+<div class="ic" style="border-color:rgba(0,210,255,0.15)">
+<div class="it" style="color:var(--cyan)">Filter 02</div>
+<div class="in">Viral Coefficient</div>
+<div class="id">Does this feature generate shares, invites, or content? Every feature should retain or distribute. If neither, it's a nice-to-have.</div>
+</div>
+<div class="ic" style="border-color:rgba(34,197,94,0.15)">
+<div class="it" style="color:var(--green)">Filter 03</div>
+<div class="in">Regulatory Surface</div>
+<div class="id">Can it ship under Curaçao today? GLI-certified for MGA within 6 months? Novel regulatory = separate longer track.</div>
+</div>
+<div class="ic" style="border-color:rgba(168,85,247,0.15)">
+<div class="it" style="color:var(--purple)">Filter 04</div>
+<div class="in">Defensibility</div>
+<div class="id">How long until Spribe copies this? Simple UI: 3 months. Social infra (Crews, cross-operator identity): 12–18 months. Prioritize what compounds.</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

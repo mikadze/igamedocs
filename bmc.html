@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — Business Model Canvas</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --card-hover: #1a1a26;
+    --border: #1e1e2e;
+    --accent: #e84545;
+    --accent-glow: rgba(232, 69, 69, 0.15);
+    --accent2: #f7b733;
+    --accent3: #00d2ff;
+    --text: #e0e0e8;
+    --text-dim: #7a7a8e;
+    --text-heading: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .header {
+    padding: 48px 48px 32px;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 48px;
+    right: 48px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .logo-mark {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+
+  .brand h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    color: var(--text-heading);
+    letter-spacing: -0.5px;
+  }
+
+  .brand h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    padding-left: 58px;
+  }
+
+  .canvas {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 2px;
+    padding: 32px 48px 48px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, border-color 0.3s;
+    animation: fadeIn 0.6s ease both;
+  }
+
+  .block:hover {
+    background: var(--card-hover);
+    border-color: #2a2a3e;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .block:nth-child(1) { animation-delay: 0.05s; }
+  .block:nth-child(2) { animation-delay: 0.1s; }
+  .block:nth-child(3) { animation-delay: 0.15s; }
+  .block:nth-child(4) { animation-delay: 0.2s; }
+  .block:nth-child(5) { animation-delay: 0.25s; }
+  .block:nth-child(6) { animation-delay: 0.3s; }
+  .block:nth-child(7) { animation-delay: 0.35s; }
+  .block:nth-child(8) { animation-delay: 0.4s; }
+  .block:nth-child(9) { animation-delay: 0.45s; }
+
+  /* Grid layout */
+  .b-partners   { grid-column: 1 / 3;  grid-row: 1 / 2; }
+  .b-activities  { grid-column: 3 / 5;  grid-row: 1 / 2; }
+  .b-value       { grid-column: 5 / 7;  grid-row: 1 / 3; }
+  .b-relations   { grid-column: 7 / 9;  grid-row: 1 / 2; }
+  .b-segments    { grid-column: 9 / 11; grid-row: 1 / 2; }
+  .b-resources   { grid-column: 3 / 5;  grid-row: 2 / 3; }
+  .b-channels    { grid-column: 7 / 9;  grid-row: 2 / 3; }
+  .b-costs       { grid-column: 1 / 6;  grid-row: 3 / 4; }
+  .b-revenue     { grid-column: 6 / 11; grid-row: 3 / 4; }
+
+  .block-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .block-label .icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .b-partners .icon   { background: rgba(232,69,69,0.15); color: var(--accent); }
+  .b-activities .icon  { background: rgba(247,183,51,0.15); color: var(--accent2); }
+  .b-value .icon       { background: rgba(0,210,255,0.15); color: var(--accent3); }
+  .b-relations .icon   { background: rgba(168,85,247,0.15); color: #a855f7; }
+  .b-segments .icon    { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .b-resources .icon   { background: rgba(247,183,51,0.15); color: var(--accent2); }
+  .b-channels .icon    { background: rgba(168,85,247,0.15); color: #a855f7; }
+  .b-costs .icon       { background: rgba(232,69,69,0.15); color: var(--accent); }
+  .b-revenue .icon     { background: rgba(34,197,94,0.15); color: #22c55e; }
+
+  .block ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .block li {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    position: relative;
+    padding-left: 14px;
+  }
+
+  .block li:last-child { border-bottom: none; }
+
+  .block li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+    font-weight: 700;
+  }
+
+  .block li strong {
+    color: var(--text-heading);
+    font-weight: 600;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .tag-new {
+    background: rgba(232,69,69,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(232,69,69,0.25);
+  }
+
+  .tag-core {
+    background: rgba(0,210,255,0.1);
+    color: var(--accent3);
+    border: 1px solid rgba(0,210,255,0.2);
+  }
+
+  /* Value prop special styling */
+  .b-value {
+    border-color: rgba(0,210,255,0.2);
+    background: linear-gradient(180deg, rgba(0,210,255,0.04), var(--card));
+  }
+
+  .b-value .value-item {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .b-value .value-item:last-child { border-bottom: none; }
+
+  .b-value .value-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 3px;
+  }
+
+  .b-value .value-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* Revenue special */
+  .b-revenue {
+    border-color: rgba(34,197,94,0.15);
+  }
+
+  .b-costs {
+    border-color: rgba(232,69,69,0.1);
+  }
+
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .rev-item {
+    background: rgba(34,197,94,0.04);
+    border: 1px solid rgba(34,197,94,0.08);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+
+  .rev-item .rev-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .rev-item .rev-val {
+    font-size: 13px;
+    color: var(--text-heading);
+    font-weight: 600;
+  }
+
+  .footer-note {
+    text-align: center;
+    padding: 16px 48px 48px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  @media (max-width: 1100px) {
+    .canvas {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 24px;
+    }
+    .header { padding: 32px 24px 24px; }
+    .header::after { left: 24px; right: 24px; }
+    .revenue-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="logo-mark">A</div>
+    <h1>aviatrix<span>.bet</span></h1>
+  </div>
+  <div class="subtitle">Business Model Canvas — 2026 Disruption Roadmap</div>
+</div>
+
+<div class="canvas">
+
+  <!-- KEY PARTNERS -->
+  <div class="block b-partners">
+    <div class="block-label"><span class="icon">⬡</span> Key Partners</div>
+    <ul>
+      <li><strong>Streamers & content creators</strong> — primary distribution channel via "Pilot's Seat" hosting <span class="tag tag-new">new</span></li>
+      <li><strong>iGaming operators</strong> — B2B white-label distribution of crash engine</li>
+      <li><strong>GLI / eCOGRA</strong> — certification bodies for provably fair + social mechanics</li>
+      <li><strong>Social platforms</strong> — TikTok, Instagram, WhatsApp deep-link partnerships</li>
+      <li><strong>Payment processors</strong> — crypto + fiat rails for global reach</li>
+      <li><strong>Influencer agencies</strong> — managed streamer recruitment pipeline</li>
+    </ul>
+  </div>
+
+  <!-- KEY ACTIVITIES -->
+  <div class="block b-activities">
+    <div class="block-label"><span class="icon">⚡</span> Key Activities</div>
+    <ul>
+      <li><strong>Social engine development</strong> — Crews, Squads, Survivor lobbies <span class="tag tag-new">new</span></li>
+      <li><strong>Content generation infra</strong> — Black Box replays, Crash Clips editor, auto-video pipeline</li>
+      <li><strong>Streamer tooling</strong> — Copy-Bet, Pilot's Seat, lobby hosting SDK</li>
+      <li><strong>Provably fair RNG</strong> — on-chain verification + GLI compliance</li>
+      <li><strong>Tournament orchestration</strong> — Survivor Lobby scheduling & prize pool mgmt</li>
+      <li><strong>Viral loop optimization</strong> — QR deep-links, share-to-play funnels</li>
+    </ul>
+  </div>
+
+  <!-- VALUE PROPOSITIONS -->
+  <div class="block b-value">
+    <div class="block-label"><span class="icon">◆</span> Value Propositions</div>
+    <div class="value-item">
+      <div class="value-title">Social-First Crash Gaming <span class="tag tag-new">disruptor</span></div>
+      <div class="value-desc">First crash game where multiplayer isn't cosmetic — Crews, Squads, and Copy-Bet make it genuinely cooperative & competitive</div>
+    </div>
+    <div class="value-item">
+      <div class="value-title">Built-In Distribution Engine</div>
+      <div class="value-desc">Every round generates shareable artifacts (Black Box, Crash Clips) — players become marketers via one-tap share to TikTok/Stories</div>
+    </div>
+    <div class="value-item">
+      <div class="value-title">Decision Anxiety Solved</div>
+      <div class="value-desc">Copy-Bet & Follow Pilot lower the barrier for new players — watch a trusted streamer, mirror their exit</div>
+    </div>
+    <div class="value-item">
+      <div class="value-title">Persistent Identity & Status</div>
+      <div class="value-desc">Flight Records, Squad Hangars, leaderboards, and crew streaks give players something to build — not just bet</div>
+    </div>
+    <div class="value-item">
+      <div class="value-title">Spectator-Ready Formats</div>
+      <div class="value-desc">Survivor Lobbies (100→1 elimination) turn crash into e-sport with narrative arcs streamers build content around</div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER RELATIONSHIPS -->
+  <div class="block b-relations">
+    <div class="block-label"><span class="icon">♦</span> Customer Relationships</div>
+    <ul>
+      <li><strong>Squad social bonds</strong> — guild-like retention via Communal Shield & shared identity <span class="tag tag-new">new</span></li>
+      <li><strong>Streamer-mediated trust</strong> — players follow pilots they trust, reducing churn</li>
+      <li><strong>Crew accountability</strong> — peer pressure keeps players engaged ("don't crash us")</li>
+      <li><strong>Status progression</strong> — Flight Records & leaderboards create persistent hooks</li>
+      <li><strong>Community content</strong> — "Best Black Box" weekly showcases & Clip of the Week contests</li>
+    </ul>
+  </div>
+
+  <!-- CUSTOMER SEGMENTS -->
+  <div class="block b-segments">
+    <div class="block-label"><span class="icon">●</span> Customer Segments</div>
+    <ul>
+      <li><strong>Gen-Z social gamblers</strong> — want community, content, identity; not just wagering</li>
+      <li><strong>Streamers & creators</strong> — need spectacle-ready formats for content</li>
+      <li><strong>Crypto-native degens</strong> — high-risk appetite, familiar with provably fair</li>
+      <li><strong>Casual mobile gamers</strong> — brought in via friend invite links & TikTok clips</li>
+      <li><strong>B2B operators</strong> — casinos & platforms licensing the social crash engine</li>
+      <li><strong>Competitive players</strong> — drawn by Survivor Lobbies & ranked crew leaderboards</li>
+    </ul>
+  </div>
+
+  <!-- KEY RESOURCES -->
+  <div class="block b-resources">
+    <div class="block-label"><span class="icon">⬡</span> Key Resources</div>
+    <ul>
+      <li><strong>Social game engine</strong> — real-time multiplayer sync, crew state, squad mechanics</li>
+      <li><strong>Content generation pipeline</strong> — auto Black Box cards, video clip renderer</li>
+      <li><strong>Streamer SDK & dashboard</strong> — Pilot's Seat controls, analytics, lobby mgmt</li>
+      <li><strong>Provably fair infrastructure</strong> — verifiable RNG with on-chain proofs</li>
+      <li><strong>Deep-link / QR system</strong> — cross-platform invite routing</li>
+      <li><strong>Gaming licenses</strong> — Curaçao, MGA, or UKGC for regulated markets</li>
+    </ul>
+  </div>
+
+  <!-- CHANNELS -->
+  <div class="block b-channels">
+    <div class="block-label"><span class="icon">♦</span> Channels</div>
+    <ul>
+      <li><strong>Viral share loops</strong> — Black Box → QR → play → share <span class="tag tag-new">new</span></li>
+      <li><strong>Streamer lobbies</strong> — Twitch/Kick/YouTube as live storefronts</li>
+      <li><strong>Crew invite links</strong> — WhatsApp, Telegram, iMessage peer-to-peer</li>
+      <li><strong>TikTok/Reels</strong> — Crash Clips with playable "beat this" CTA</li>
+      <li><strong>B2B operator integration</strong> — white-label API into existing casino platforms</li>
+      <li><strong>Clip of the Week / Best Black Box</strong> — owned content marketing</li>
+    </ul>
+  </div>
+
+  <!-- COST STRUCTURE -->
+  <div class="block b-costs">
+    <div class="block-label"><span class="icon">⬡</span> Cost Structure</div>
+    <ul>
+      <li><strong>Engineering</strong> — real-time multiplayer infra, content generation pipeline, streamer SDK, clip editor</li>
+      <li><strong>Licensing & compliance</strong> — GLI certification for social mechanics (Communal Shield, Copy-Bet), jurisdiction fees</li>
+      <li><strong>Streamer acquisition</strong> — guaranteed minimums, rev-share deals, tournament prize pools</li>
+      <li><strong>Infrastructure</strong> — low-latency servers for synchronized Crew/Squad play, video rendering at scale</li>
+      <li><strong>Content moderation</strong> — UGC clip review, leaderboard integrity, anti-collusion in Survivor Lobbies</li>
+      <li><strong>Player acquisition cost</strong> — subsidized via viral loops (target: near-zero marginal CAC at scale)</li>
+    </ul>
+  </div>
+
+  <!-- REVENUE STREAMS -->
+  <div class="block b-revenue">
+    <div class="block-label"><span class="icon">●</span> Revenue Streams</div>
+    <div class="revenue-grid">
+      <div class="rev-item">
+        <div class="rev-label">Core: House Edge</div>
+        <div class="rev-val">Standard crash game margin (3–5%) on all wagers — Crew bonus & Shield payouts factored into edge math</div>
+      </div>
+      <div class="rev-item">
+        <div class="rev-label">Tournaments</div>
+        <div class="rev-val">Survivor Lobby entry fees with rake on prize pools — hourly scheduling drives volume</div>
+      </div>
+      <div class="rev-item">
+        <div class="rev-label">B2B Licensing</div>
+        <div class="rev-val">Social crash engine licensed to operators — rev-share or fixed fee per integration</div>
+      </div>
+      <div class="rev-item">
+        <div class="rev-label">Cosmetics & Customization</div>
+        <div class="rev-val">Squad Hangar skins, plane/rocket assets, Black Box templates, clip editor effects</div>
+      </div>
+      <div class="rev-item">
+        <div class="rev-label">Streamer Tools (Premium)</div>
+        <div class="rev-val">Pilot's Seat advanced features, analytics dashboard, branded lobby themes</div>
+      </div>
+      <div class="rev-item">
+        <div class="rev-label">Sponsored Tournaments</div>
+        <div class="rev-val">Operators & brands sponsor Survivor Lobbies and Clip of the Week prize pools</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-note">aviatrix.bet — social crash gaming infrastructure · Q1 2026 draft</div>
+
+</body>
+</html>

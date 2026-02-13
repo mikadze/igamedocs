@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — Master Feature Priority List</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080d;--s:#101018;--s2:#16161f;--b:#1c1c2c;--t:#d8d8e4;--td:#6a6a80;--th:#f0f0f6;--red:#e84545;--ora:#f7a733;--cy:#00d2ff;--gr:#22c55e;--pu:#a855f7;--pk:#ec4899;--ye:#eab308;--tl:#34d399}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:'Outfit',sans-serif}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")}
+.hd{padding:44px 48px 28px;border-bottom:1px solid var(--b)}
+.br{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.lm{width:36px;height:36px;background:linear-gradient(135deg,var(--red),var(--ora));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff}
+.br h1{font-family:'Space Mono',monospace;font-size:22px;color:var(--th)}.br h1 span{color:var(--red)}
+.ps{font-size:11px;color:var(--td);font-family:'Space Mono',monospace;letter-spacing:2.5px;text-transform:uppercase;padding-left:50px}
+.ct{padding:32px 48px 64px;max-width:1440px;margin:0 auto}
+.dv{height:1px;background:linear-gradient(90deg,transparent,var(--b),transparent);margin:40px 0}
+
+/* Tier headers */
+.tier-hd{display:flex;align-items:center;gap:16px;margin-bottom:6px}
+.tier-num{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:5px}
+.tier-title{font-size:22px;font-weight:700;color:var(--th)}
+.tier-sub{font-size:13px;color:var(--td);margin-bottom:20px;line-height:1.6;max-width:800px}
+
+/* Table styles */
+.tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:12px;overflow-x:auto;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:11.5px;min-width:1100px}
+thead th{padding:10px 12px;text-align:left;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--td);border-bottom:1px solid var(--b);background:var(--s2);position:sticky;top:0}
+tbody td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.02);color:var(--t);vertical-align:top}
+tbody tr:hover{background:rgba(255,255,255,0.015)}
+.fn{font-weight:700;color:var(--th);font-size:12px}
+.pill{display:inline-block;padding:2px 6px;border-radius:3px;font-size:8px;font-family:'Space Mono',monospace;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap}
+.p-crit{background:rgba(232,69,69,0.15);color:var(--red)}
+.p-high{background:rgba(247,167,51,0.12);color:var(--ora)}
+.p-med{background:rgba(0,210,255,0.1);color:var(--cy)}
+.p-low{background:rgba(255,255,255,0.05);color:var(--td)}
+.e-low{background:rgba(34,197,94,0.1);color:var(--gr)}
+.e-med{background:rgba(234,179,8,0.1);color:var(--ye)}
+.e-high{background:rgba(232,69,69,0.1);color:var(--red)}
+.src-pill{display:inline-block;padding:1px 5px;border-radius:2px;font-size:7.5px;font-family:'Space Mono',monospace;letter-spacing:0.5px;text-transform:uppercase;margin-right:2px}
+.s-orig{background:rgba(0,210,255,0.08);color:var(--cy)}
+.s-vpc{background:rgba(168,85,247,0.08);color:var(--pu)}
+.s-brain{background:rgba(34,197,94,0.08);color:var(--gr)}
+.s-trend{background:rgba(247,167,51,0.08);color:var(--ora)}
+.cat{font-size:9px;font-family:'Space Mono',monospace;letter-spacing:0.5px;color:var(--td);text-transform:uppercase}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:28px}
+.stat{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:16px;text-align:center}
+.stat-n{font-family:'Space Mono',monospace;font-size:32px;font-weight:700;margin-bottom:2px}
+.stat-l{font-size:9px;color:var(--td);font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+
+/* Insight */
+.ins{background:linear-gradient(135deg,rgba(232,69,69,0.06),rgba(247,167,51,0.04));border:1px solid rgba(232,69,69,0.12);border-radius:11px;padding:20px 24px;margin:20px 0}
+.ins-l{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.ins-t{font-size:13px;color:var(--th);line-height:1.6;font-weight:500}
+
+@media(max-width:1000px){.ct{padding:24px 16px}.hd{padding:32px 16px 24px}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="hd">
+<div class="br"><div class="lm">A</div><h1>aviatrix<span>.bet</span></h1></div>
+<div class="ps">Master Feature Priority List — 60 Ideas Ranked</div>
+</div>
+
+<div class="ct">
+
+<div style="font-size:13px;color:var(--td);margin-bottom:24px;max-width:900px;line-height:1.6">Every idea from the original innovation doc, VP Canvas ideation, deep brainstorm, and gaming trends analysis — deduplicated, merged where overlapping, scored on impact × effort × defensibility, and sorted into five priority tiers. Each idea tagged with its source document(s).</div>
+
+<div class="stats">
+<div class="stat"><div class="stat-n" style="color:var(--red)">12</div><div class="stat-l">P0 — Critical</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--ora)">14</div><div class="stat-l">P1 — High</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--cy)">16</div><div class="stat-l">P2 — Medium</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--td)">11</div><div class="stat-l">P3 — Explore</div></div>
+<div class="stat"><div class="stat-n" style="color:var(--pu)">7</div><div class="stat-l">P4 — Moonshot</div></div>
+</div>
+
+<!-- ============ P0 — CRITICAL ============ -->
+<div class="tier-hd">
+<span class="tier-num" style="background:rgba(232,69,69,0.15);color:var(--red)">P0 — Critical</span>
+<span class="tier-title">Build First — The Core Platform</span>
+</div>
+<div class="tier-sub">These 12 features define what Aviatrix IS. Without them, you're shipping another crash game. With them, you're shipping a social crash platform. Every confirmed feature + the must-have gaming industry mechanics that no crash game has.</div>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Description</th><th>Category</th><th>Effort</th><th>Solves</th><th>Source</th><th>Why P0</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="fn">Crew System (2–5 Friends)</td><td>Invite links, group visibility on curve, "don't crash us" pressure, Crew bonuses</td><td class="cat">Social Core</td><td><span class="pill e-med">Med</span></td><td>P1,P2,P3</td><td><span class="src-pill s-orig">Doc</span><span class="src-pill s-vpc">VPC</span></td><td>Foundational social unit. Everything builds on Crews.</td></tr>
+<tr><td>2</td><td class="fn">Squad Hangar + Communal Shield</td><td>Guild-style persistent groups, shared visual hub, 10% shield on low crashes</td><td class="cat">Social Core</td><td><span class="pill e-med">Med</span></td><td>P1,P2,G1,G2</td><td><span class="src-pill s-orig">Doc</span><span class="src-pill s-vpc">VPC</span></td><td>Retention moat. Social switching cost = LTV extension.</td></tr>
+<tr><td>3</td><td class="fn">Copy-Bet / Follow Pilot</td><td>One-click mirror a streamer's cash-out, reduces decision anxiety for new players</td><td class="cat">Streamer</td><td><span class="pill e-low">Low</span></td><td>P4,P5,G5</td><td><span class="src-pill s-orig">Doc</span><span class="src-pill s-vpc">VPC</span></td><td>Viewer → bettor conversion. Core to streamer economics.</td></tr>
+<tr><td>4</td><td class="fn">Survivor Lobbies (100→1)</td><td>Elimination tournament, bottom half cut each round, hourly scheduling</td><td class="cat">Tournament</td><td><span class="pill e-high">High</span></td><td>P7,P8,G7,J1</td><td><span class="src-pill s-orig">Doc</span><span class="src-pill s-vpc">VPC</span></td><td>Spectator format. Content engine. Appointment play.</td></tr>
+<tr><td>5</td><td class="fn">Black Box Replay Cards</td><td>Auto-generated 9:16 shareable graphic, QR deep-link, operator-branded</td><td class="cat">Distribution</td><td><span class="pill e-low">Low</span></td><td>P3,P4,G3,G4</td><td><span class="src-pill s-orig">Doc</span><span class="src-pill s-vpc">VPC</span></td><td>Every round = share opportunity. Zero-cost acquisition loop.</td></tr>
+<tr><td>6</td><td class="fn">Crash Clips (TikTok-Native)</td><td>Auto-edited short-form video clips of dramatic moments, one-tap share</td><td class="cat">Distribution</td><td><span class="pill e-med">Med</span></td><td>P4,P7,J6</td><td><span class="src-pill s-orig">Doc</span></td><td>Video > image on social. TikTok is the discovery platform for Gen-Z.</td></tr>
+<tr><td>7</td><td class="fn">Flight Pass (Season System)</td><td>30-day progression, free + premium track, XP from rounds/Crew/Survivors</td><td class="cat">Progression</td><td><span class="pill e-med">Med</span></td><td>P2,P8,J2,J5</td><td><span class="src-pill s-vpc">VPC</span><span class="src-pill s-trend">Trend</span></td><td>89% buy rate in Fortnite. Crash has ZERO progression. Biggest gap.</td></tr>
+<tr><td>8</td><td class="fn">Pilot License (Persistent Rank)</td><td>Account-level Bronze→Diamond, permanent perks, never resets</td><td class="cat">Identity</td><td><span class="pill e-med">Med</span></td><td>P2,G8,J2</td><td><span class="src-pill s-trend">Trend</span></td><td>VP Canvas "identity gap." What you lose if you churn. Meta Pass model.</td></tr>
+<tr><td>9</td><td class="fn">Plane Skin + Trail Economy</td><td>Cosmetic skins, paint jobs, engine glow, vapor trails, limited editions</td><td class="cat">Monetization</td><td><span class="pill e-med">Med</span></td><td>J7,J8,G1</td><td><span class="src-pill s-trend">Trend</span><span class="src-pill s-vpc">VPC</span></td><td>35% of Fortnite revenue. 274M daily Roblox avatar updates. Proven model.</td></tr>
+<tr><td>10</td><td class="fn">Pilot's Seat (Streamer Hosting)</td><td>Streamer lobby hosting, audience view, analytics dashboard</td><td class="cat">Streamer</td><td><span class="pill e-med">Med</span></td><td>P5,G5,J6</td><td><span class="src-pill s-orig">Doc</span></td><td>Streamers want the feature, not the fee. Solves acquisition economics.</td></tr>
+<tr><td>11</td><td class="fn">Pilot Partner Program</td><td>Tiered creator rev-share: Pilot (10 refs) → Captain (50) → Commander (200)</td><td class="cat">Creator Economy</td><td><span class="pill e-low">Low</span></td><td>P3,P5,J3</td><td><span class="src-pill s-brain">Brain</span><span class="src-pill s-trend">Trend</span></td><td>$740M paid to Roblox creators. 10K micro-affiliates > 10 macro-streamers.</td></tr>
+<tr><td>12</td><td class="fn">Telegram Mini App</td><td>Full crash inside Telegram, TON wallet, Crews, Survivors — zero download</td><td class="cat">Distribution</td><td><span class="pill e-high">High</span></td><td>P3,P4,J3,J4</td><td><span class="src-pill s-brain">Brain</span><span class="src-pill s-trend">Trend</span></td><td>Hamster Kombat: 300M users. First social crash on Telegram wins outright.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ P1 — HIGH ============ -->
+<div class="tier-hd">
+<span class="tier-num" style="background:rgba(247,167,51,0.12);color:var(--ora)">P1 — High</span>
+<span class="tier-title">Build Next — Deepening the Moat</span>
+</div>
+<div class="tier-sub">These 14 features turn the core platform into a defensible ecosystem. Each one compounds the value of P0 features — making Crews stickier, events bigger, content richer, and revenue deeper.</div>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Description</th><th>Category</th><th>Effort</th><th>Solves</th><th>Source</th><th>Why P1</th></tr></thead>
+<tbody>
+<tr><td>13</td><td class="fn">Daily Missions / Quest Board</td><td>"Cash out above 5x three times." "Play 5 with Crew." Rewards: XP, cosmetics</td><td class="cat">Retention</td><td><span class="pill e-low">Low</span></td><td>P2,P8,J5</td><td><span class="src-pill s-vpc">VPC</span><span class="src-pill s-brain">Brain</span></td><td>Appointment play. Every session game uses this. Crash has none.</td></tr>
+<tr><td>14</td><td class="fn">Streak Multiplier</td><td>Play daily → rising small bonus. Day 7: +0.3x. Miss a day, resets</td><td class="cat">Retention</td><td><span class="pill e-low">Low</span></td><td>P2,J2,J5</td><td><span class="src-pill s-brain">Brain</span></td><td>Snapchat proved streaks addictive. Low dev, massive daily return impact.</td></tr>
+<tr><td>15</td><td class="fn">Session Recap + Tomorrow's Forecast</td><td>End-of-session cinematic: best moments, rank change, tease tomorrow's events</td><td class="cat">Retention</td><td><span class="pill e-low">Low</span></td><td>P8,J5</td><td><span class="src-pill s-brain">Brain</span></td><td>Netflix "next episode" hook. Every great app has an exit hook. Crash: zero.</td></tr>
+<tr><td>16</td><td class="fn">Crew Contracts (Weekly Commitments)</td><td>Promise your crew 10 rounds/week. All fulfill → collective bonus. Break → red name</td><td class="cat">Social</td><td><span class="pill e-low">Low</span></td><td>P2,J2</td><td><span class="src-pill s-brain">Brain</span></td><td>Social commitment devices = strongest retention in behavioral science.</td></tr>
+<tr><td>17</td><td class="fn">Grand Crash Events (Monthly Tentpole)</td><td>1,000-player Survivor, sponsored, streamed, special modifiers, limited-edition skin</td><td class="cat">Events</td><td><span class="pill e-med">Med</span></td><td>P7,J5,J6</td><td><span class="src-pill s-trend">Trend</span></td><td>Fortnite: events = 10x engagement spikes. Zero crash games attempt events.</td></tr>
+<tr><td>18</td><td class="fn">Cash-Out Animations (Emote Layer)</td><td>Custom animations on cash-out: "Barrel Roll" at 2x, "Sonic Boom" at 5x</td><td class="cat">Cosmetics</td><td><span class="pill e-med">Med</span></td><td>J7,J8</td><td><span class="src-pill s-trend">Trend</span></td><td>#1 Roblox UGC trend. The cash-out moment = perfect self-expression trigger.</td></tr>
+<tr><td>19</td><td class="fn">Crew Voice Chat (During Rounds)</td><td>Real-time voice in Crew during rounds. Screams, callouts, peer pressure. Clippable</td><td class="cat">Social</td><td><span class="pill e-med">Med</span></td><td>P7,P8,J7</td><td><span class="src-pill s-vpc">VPC</span><span class="src-pill s-trend">Trend</span></td><td>ARC Raiders won GOTY 2025 on proximity voice. Audio moments = viral content.</td></tr>
+<tr><td>20</td><td class="fn">Ghost Race Challenges</td><td>Replay someone's round, try to beat it. Playable challenge in TikTok/Stories</td><td class="cat">Distribution</td><td><span class="pill e-med">Med</span></td><td>P3,P7,J3,J6</td><td><span class="src-pill s-orig">Doc</span><span class="src-pill s-vpc">VPC</span></td><td>Content that IS a conversion funnel. Playable social media posts.</td></tr>
+<tr><td>21</td><td class="fn">Referral Kickback Chain (3-Level)</td><td>2% → 0.5% → 0.1% on 3 levels. Visual "referral tree" with live earnings</td><td class="cat">Acquisition</td><td><span class="pill e-low">Low</span></td><td>P3,J3</td><td><span class="src-pill s-brain">Brain</span></td><td>Multi-level referrals built Uber, Dropbox. Tree visualization = shareable content.</td></tr>
+<tr><td>22</td><td class="fn">Micro-Influencer Rev Share</td><td>Any player with 10+ active Crew earns 0.5–1% of network GGR. No guarantee</td><td class="cat">Creator Economy</td><td><span class="pill e-low">Low</span></td><td>P5,J3,J6</td><td><span class="src-pill s-brain">Brain</span></td><td>Democratizes streamer model. 10K micro-affiliates replace 10 expensive macros.</td></tr>
+<tr><td>23</td><td class="fn">Sponsored Volatility Events</td><td>Brands sponsor special hours. "Binance Hour: boosted vol, €25K prize." Brand on-screen</td><td class="cat">Monetization</td><td><span class="pill e-low">Low</span></td><td>J8,J7</td><td><span class="src-pill s-brain">Brain</span></td><td>New revenue stream. Zero dev. Sports do this already. Crash: nothing.</td></tr>
+<tr><td>24</td><td class="fn">Operator Custom Event Builder</td><td>Dashboard for operators to create custom tournaments with branded visuals/prizes</td><td class="cat">B2B</td><td><span class="pill e-med">Med</span></td><td>P1,P5,J5</td><td><span class="src-pill s-vpc">VPC</span></td><td>Operators invest more when they co-create. Their event = their marketing.</td></tr>
+<tr><td>25</td><td class="fn">Compliance API for Operators</td><td>Behavioral data API: session analytics, risk scores, loss-chasing detection</td><td class="cat">B2B / Regulation</td><td><span class="pill e-med">Med</span></td><td>P6</td><td><span class="src-pill s-brain">Brain</span></td><td>Makes Marcus's compliance team an advocate. De-risks operator integration.</td></tr>
+<tr><td>26</td><td class="fn">Dynamic Environments</td><td>Visuals change with multiplier: calm sky → storm → lightning → space at 10x+</td><td class="cat">Core UX</td><td><span class="pill e-med">Med</span></td><td>P7,J7</td><td><span class="src-pill s-brain">Brain</span></td><td>Every round becomes cinematic. High-multiplier rounds look different = shareable.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ P2 — MEDIUM ============ -->
+<div class="tier-hd">
+<span class="tier-num" style="background:rgba(0,210,255,0.1);color:var(--cy)">P2 — Medium</span>
+<span class="tier-title">Build Steady — Expanding the Surface Area</span>
+</div>
+<div class="tier-sub">These 16 features expand the product into new dimensions: new modes, new revenue streams, new player segments. Each is valuable on its own but depends on P0/P1 infrastructure existing first.</div>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Description</th><th>Category</th><th>Effort</th><th>Solves</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>27</td><td class="fn">Volatility Rooms / Mood Selection</td><td>"Chill" / "Standard" / "Degen" — different curves, aesthetics, music. Same edge</td><td class="cat">Core UX</td><td><span class="pill e-med">Med</span></td><td>P1,J7</td><td><span class="src-pill s-vpc">VPC</span><span class="src-pill s-trend">Trend</span></td></tr>
+<tr><td>28</td><td class="fn">Free-to-Play Prediction Layer</td><td>Non-wagering: predict crash above/below threshold. Points, leaderboard, cosmetics</td><td class="cat">Acquisition</td><td><span class="pill e-med">Med</span></td><td>P3,P6,J3</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>29</td><td class="fn">Auto-Highlight Reel</td><td>AI picks 3 best moments, edits 15s reel with music. Weekly "Best of Aviatrix"</td><td class="cat">Content</td><td><span class="pill e-med">Med</span></td><td>P7,J6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>30</td><td class="fn">Crash Insurance / Hedge Mechanic</td><td>Pay 5–15% premium, get 80% back on sub-1.5x crashes. Operator keeps premium</td><td class="cat">Monetization</td><td><span class="pill e-med">Med</span></td><td>P1,J7,J8</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>31</td><td class="fn">Boost Round Tokens</td><td>Purchasable: "Safe Landing," "Turbo" (+1.2x), "Double or Nothing." Consumable</td><td class="cat">Monetization</td><td><span class="pill e-med">Med</span></td><td>P1,J8</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>32</td><td class="fn">Mystery Modifier Rounds</td><td>Every 10th round: random twist announced 10s before. "GRAVITY," "MIRROR," etc.</td><td class="cat">Core UX</td><td><span class="pill e-med">Med</span></td><td>P1,P8,J7</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>33</td><td class="fn">Crew Formation Bonuses</td><td>"The Ladder" (ascending cash-outs), "The Sacrifice" (one crashes → others 2x)</td><td class="cat">Social</td><td><span class="pill e-med">Med</span></td><td>P1,J7</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>34</td><td class="fn">Commentator Mode</td><td>Spectator UI for shoutcasters: bird's-eye, auto-focus, stat overlays</td><td class="cat">Content</td><td><span class="pill e-med">Med</span></td><td>P7,J6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>35</td><td class="fn">Streamer vs. Streamer Duels</td><td>Best-of-5, same curve, audience Copy-Bets on who wins. Scheduled events</td><td class="cat">Content</td><td><span class="pill e-med">Med</span></td><td>P5,P7,J6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>36</td><td class="fn">WhatsApp Mini-Game Bot</td><td>Simplified crash prediction in-chat. Points only. Top scorers → invite to real game</td><td class="cat">Acquisition</td><td><span class="pill e-med">Med</span></td><td>P3,J3,J4</td><td><span class="src-pill s-brain">Brain</span><span class="src-pill s-trend">Trend</span></td></tr>
+<tr><td>37</td><td class="fn">Premium Crew Tiers</td><td>Free: 3 members. Silver (paid): 5 + voice. Gold: 10 + analytics + priority</td><td class="cat">Monetization</td><td><span class="pill e-low">Low</span></td><td>J8</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>38</td><td class="fn">Persistent Fuel Tank</td><td>Play fills fuel. Inactivity drains 10%/day. Empty = lose premium access</td><td class="cat">Retention</td><td><span class="pill e-med">Med</span></td><td>P2,J2</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>39</td><td class="fn">Responsible Play Score</td><td>Public behavioral health score. High = feature unlocks. Low = cool-down suggestions</td><td class="cat">Regulation</td><td><span class="pill e-med">Med</span></td><td>P6,J7</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>40</td><td class="fn">Conditional Cash-Out Rules</td><td>Pre-set logic: "Cash Bet 1 at 2x → let Bet 2 ride to 5x." Algorithmic trading feel</td><td class="cat">Core UX</td><td><span class="pill e-med">Med</span></td><td>P1,J7</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>41</td><td class="fn">Flash Events (Unannounced)</td><td>Random 30-min "Golden Hour" modifiers. Push notification → instant re-engagement</td><td class="cat">Events</td><td><span class="pill e-low">Low</span></td><td>P8,J5</td><td><span class="src-pill s-trend">Trend</span></td></tr>
+<tr><td>42</td><td class="fn">Shared Crew Progression</td><td>One member's Flight Pass milestone gives whole Crew XP boost</td><td class="cat">Social</td><td><span class="pill e-low">Low</span></td><td>P2,G2</td><td><span class="src-pill s-trend">Trend</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ P3 — EXPLORE ============ -->
+<div class="tier-hd">
+<span class="tier-num" style="background:rgba(255,255,255,0.05);color:var(--td)">P3 — Explore</span>
+<span class="tier-title">Test & Learn — High-Ceiling Experiments</span>
+</div>
+<div class="tier-sub">These 11 features have strong potential but need design validation, regulatory review, or market testing. Build prototypes, A/B test, iterate. Some may graduate to P1; others may die.</div>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Description</th><th>Category</th><th>Effort</th><th>Solves</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>43</td><td class="fn">Side Bets on Friends</td><td>"I bet Sofia crashes before 2x." Separate micro-wager alongside main bet</td><td class="cat">Monetization</td><td><span class="pill e-med">Med</span></td><td>P8,J1,J8</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>44</td><td class="fn">Audience-Controlled Rounds</td><td>Twitch chat votes "HOLD" or "CASH OUT" on streamer's bet. Collective decision</td><td class="cat">Content</td><td><span class="pill e-high">High</span></td><td>P5,P7,J6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>45</td><td class="fn">Crash IQ Quiz Funnel</td><td>Social media quiz: "when would you cash out?" Personality result card → deep-link</td><td class="cat">Acquisition</td><td><span class="pill e-low">Low</span></td><td>P4,J3,J6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>46</td><td class="fn">Crash Fantasy League</td><td>Weekly: draft 5 real players. Score on their cash-out performance. Entry fee or free</td><td class="cat">Engagement</td><td><span class="pill e-med">Med</span></td><td>J5,J7</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>47</td><td class="fn">Multi-Curve Rounds</td><td>3 curves rise simultaneously. Pick the right one. Crews split across for hedging</td><td class="cat">Core UX</td><td><span class="pill e-high">High</span></td><td>P1,J7</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>48</td><td class="fn">Obstacle Curves (Skill Layer)</td><td>Dodge obstacles during climb → bonus multiplier. Reflex-skill on top of timing-risk</td><td class="cat">Core UX</td><td><span class="pill e-high">High</span></td><td>P1,J7</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>49</td><td class="fn">Cool-Down Mini-Games</td><td>After 5+ losses: free non-gambling mini-game. Earn XP. Elegant harm reduction</td><td class="cat">Regulation</td><td><span class="pill e-med">Med</span></td><td>P6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>50</td><td class="fn">The Vault (Compound Savings)</td><td>Auto-save 1–5% of wins. Daily 0.1% bonus. 7-day lock with play bonus on unlock</td><td class="cat">Retention</td><td><span class="pill e-med">Med</span></td><td>P2,J2</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>51</td><td class="fn">Data-as-a-Service Dashboard</td><td>Sell anonymized cross-operator behavioral insights: Crew LTV, social retention data</td><td class="cat">B2B / Revenue</td><td><span class="pill e-med">Med</span></td><td>J8</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>52</td><td class="fn">Buddy System (Accountability)</td><td>Designate a friend who gets weekly anonymized play summaries. Opt-in responsible play</td><td class="cat">Regulation</td><td><span class="pill e-low">Low</span></td><td>P6</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>53</td><td class="fn">Narrative Seasons (30-Day Arcs)</td><td>"The Storm" — volatility shifts weekly, weather effects, climax event, exclusive badge</td><td class="cat">Retention</td><td><span class="pill e-med">Med</span></td><td>P2,P8,J5</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ P4 — MOONSHOT ============ -->
+<div class="tier-hd">
+<span class="tier-num" style="background:rgba(168,85,247,0.1);color:var(--pu)">P4 — Moonshot</span>
+<span class="tier-title">Vision Bets — Category-Defining If They Work</span>
+</div>
+<div class="tier-sub">These 7 ideas could redefine what crash gaming IS — but carry high risk, high dev cost, or regulatory uncertainty. Build only when the core platform is proven and revenue is flowing.</div>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Description</th><th>Category</th><th>Effort</th><th>Solves</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td>54</td><td class="fn">AI Co-Pilot (Risk Coach)</td><td>AI learns your risk profile. Suggests cash-out points. Warns when chasing losses</td><td class="cat">Regulation / UX</td><td><span class="pill e-high">High</span></td><td>P6,J2</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>55</td><td class="fn">Open Crash Protocol (B2B2B)</td><td>Open protocol for social crash mechanics. Aviatrix = infrastructure. "Stripe for crash"</td><td class="cat">Platform</td><td><span class="pill e-high">High</span></td><td>J1,J8</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>56</td><td class="fn">Cross-Operator Portable Identity</td><td>NFT plane, rank, Crew persist across all operators running Aviatrix</td><td class="cat">Platform</td><td><span class="pill e-high">High</span></td><td>P1,P2,G8</td><td><span class="src-pill s-vpc">VPC</span></td></tr>
+<tr><td>57</td><td class="fn">Cosmetic Marketplace (P2P Trading)</td><td>Player-to-player skin trading. 5–10% marketplace fee. Expired season skins go scarce</td><td class="cat">Monetization</td><td><span class="pill e-high">High</span></td><td>J7,J8</td><td><span class="src-pill s-brain">Brain</span><span class="src-pill s-trend">Trend</span></td></tr>
+<tr><td>58</td><td class="fn">UGC Plane Skins (Creator Cosmetics)</td><td>Players design + sell custom skins. 50–70% creator share. Marketplace cut</td><td class="cat">Creator Economy</td><td><span class="pill e-high">High</span></td><td>J8</td><td><span class="src-pill s-trend">Trend</span></td></tr>
+<tr><td>59</td><td class="fn">Free Spectator App</td><td>Standalone app: watch live crash rounds, make predictions, zero wagering</td><td class="cat">Acquisition</td><td><span class="pill e-high">High</span></td><td>P3,P4,J3</td><td><span class="src-pill s-brain">Brain</span></td></tr>
+<tr><td>60</td><td class="fn">Crash Festival (Social Lobby)</td><td>Non-gambling social space: hangout, view Hangars, trade skins, watch Survivors</td><td class="cat">Social</td><td><span class="pill e-high">High</span></td><td>P1,J7</td><td><span class="src-pill s-trend">Trend</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="dv"></div>
+
+<!-- ============ INSIGHT ============ -->
+<div class="ins">
+<div class="ins-l">Priority Logic</div>
+<div class="ins-t">Every feature was scored across four filters: <strong>Operator Pull</strong> (would Marcus/Sofia/Daniel/Kai pay for this?), <strong>Viral Coefficient</strong> (does it generate shares, invites, or content?), <strong>Regulatory Surface</strong> (can it ship under Curaçao today, GLI within 6 months?), and <strong>Defensibility</strong> (how long until Spribe copies it?). P0 features score high on all four. P4 features score very high on defensibility but face effort/regulatory barriers. The sweet spot for immediate impact is the P0 + P1 features marked as Low or Med effort.</div>
+</div>
+
+<div class="dv"></div>
+
+<!-- Quick-win callout -->
+<div class="tier-hd">
+<span class="tier-num" style="background:rgba(34,197,94,0.12);color:var(--gr)">Quick Wins</span>
+<span class="tier-title">15 Ideas That Are Low-Effort Across All Tiers</span>
+</div>
+<div class="tier-sub">Filtered for Low dev effort from the master list. These can ship in 1–2 sprints regardless of priority tier. Start here for fastest time-to-value.</div>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Feature</th><th>Priority</th><th>Category</th><th>Key Impact</th></tr></thead>
+<tbody>
+<tr><td>3</td><td class="fn">Copy-Bet / Follow Pilot</td><td><span class="pill p-crit">P0</span></td><td class="cat">Streamer</td><td>Viewer → bettor conversion. Core to streamer economics</td></tr>
+<tr><td>5</td><td class="fn">Black Box Replay Cards</td><td><span class="pill p-crit">P0</span></td><td class="cat">Distribution</td><td>Every round = shareable acquisition loop</td></tr>
+<tr><td>11</td><td class="fn">Pilot Partner Program</td><td><span class="pill p-crit">P0</span></td><td class="cat">Creator Economy</td><td>Turns players into paid distributors</td></tr>
+<tr><td>13</td><td class="fn">Daily Missions</td><td><span class="pill p-high">P1</span></td><td class="cat">Retention</td><td>Appointment play. Daily return habit</td></tr>
+<tr><td>14</td><td class="fn">Streak Multiplier</td><td><span class="pill p-high">P1</span></td><td class="cat">Retention</td><td>Snapchat streaks + financial edge</td></tr>
+<tr><td>15</td><td class="fn">Session Recap + Forecast</td><td><span class="pill p-high">P1</span></td><td class="cat">Retention</td><td>Exit hook → return tomorrow</td></tr>
+<tr><td>16</td><td class="fn">Crew Contracts</td><td><span class="pill p-high">P1</span></td><td class="cat">Social</td><td>Social commitment device. Peer accountability</td></tr>
+<tr><td>21</td><td class="fn">Referral Kickback Chain</td><td><span class="pill p-high">P1</span></td><td class="cat">Acquisition</td><td>3-level referral tree. Visual network = shareable</td></tr>
+<tr><td>22</td><td class="fn">Micro-Influencer Rev Share</td><td><span class="pill p-high">P1</span></td><td class="cat">Creator Economy</td><td>10K micro-affiliates replace 10 macro-streamers</td></tr>
+<tr><td>23</td><td class="fn">Sponsored Volatility Events</td><td><span class="pill p-high">P1</span></td><td class="cat">Monetization</td><td>New B2B revenue stream. Zero dev cost</td></tr>
+<tr><td>37</td><td class="fn">Premium Crew Tiers</td><td><span class="pill p-med">P2</span></td><td class="cat">Monetization</td><td>Discord Nitro model. Social upsell</td></tr>
+<tr><td>41</td><td class="fn">Flash Events</td><td><span class="pill p-med">P2</span></td><td class="cat">Events</td><td>Push notification → instant re-engagement</td></tr>
+<tr><td>42</td><td class="fn">Shared Crew Progression</td><td><span class="pill p-med">P2</span></td><td class="cat">Social</td><td>Interdependent progression. 2026 co-op design standard</td></tr>
+<tr><td>45</td><td class="fn">Crash IQ Quiz Funnel</td><td><span class="pill p-low">P3</span></td><td class="cat">Acquisition</td><td>Viral personality quiz. 3–5x share rate</td></tr>
+<tr><td>52</td><td class="fn">Buddy System</td><td><span class="pill p-low">P3</span></td><td class="cat">Regulation</td><td>Responsible play innovation. UKGC would spotlight</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+</body>
+</html>

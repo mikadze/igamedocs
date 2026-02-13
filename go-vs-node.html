@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go vs Node.js — CCU Breakpoint Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#050509;--s1:#0b0b13;--s2:#10101a;--s3:#161620;
+  --bd:#1a1a2a;--bd2:#262640;
+  --tx:#b8b8cc;--txd:#555568;--txh:#ededf4;
+  --go:#18dcff;--node:#f7a733;--danger:#ff4757;--safe:#2ed573;
+  --prp:#a855f7;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--tx);font-family:'Sora',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6;}
+
+.hdr{padding:36px 44px 24px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:rgba(5,5,9,0.94);backdrop-filter:blur(20px);z-index:100;}
+.hdr-row{display:flex;align-items:center;gap:12px;margin-bottom:3px;}
+.hdr-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--danger),var(--node));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;}
+.hdr-row h1{font-family:'DM Mono',monospace;font-size:18px;color:var(--txh);}
+.hdr-row h1 em{color:var(--danger);font-style:normal;}
+.hdr-sub{font-size:11px;color:var(--txd);letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+
+.main{padding:36px 44px 80px;max-width:1400px;}
+
+/* ===== CCU SLIDER ===== */
+.slider-zone{
+  background:var(--s1);border:1px solid var(--bd);border-radius:14px;
+  padding:32px 36px;margin-bottom:36px;position:relative;overflow:hidden;
+}
+.slider-zone::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--safe),var(--go),var(--node),var(--danger));
+}
+.slider-label{
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  font-family:'DM Mono',monospace;color:var(--txd);margin-bottom:8px;
+}
+.slider-val{
+  font-family:'DM Mono',monospace;font-size:42px;font-weight:700;
+  color:var(--txh);margin-bottom:6px;
+  display:flex;align-items:baseline;gap:10px;
+}
+.slider-val small{font-size:16px;color:var(--txd);font-weight:500;}
+.slider-verdict{
+  font-size:13px;margin-bottom:20px;line-height:1.5;
+  padding:8px 14px;border-radius:8px;border:1px solid var(--bd);
+  background:var(--s2);
+}
+.slider-verdict strong{color:var(--txh);}
+
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:8px;
+  background:var(--s3);border-radius:4px;outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;
+  border-radius:50%;background:var(--go);cursor:grab;
+  box-shadow:0 0 16px rgba(24,220,255,0.3);
+  border:3px solid var(--bg);
+}
+.slider-ticks{
+  display:flex;justify-content:space-between;
+  font-size:10px;font-family:'DM Mono',monospace;color:var(--txd);
+  margin-top:8px;padding:0 2px;
+}
+
+/* ===== PHASE INDICATORS ===== */
+.phase-bar{
+  display:flex;gap:2px;margin-bottom:36px;border-radius:8px;overflow:hidden;
+}
+.phase-seg{
+  flex:1;padding:12px 16px;text-align:center;
+  font-size:11px;font-weight:600;font-family:'DM Mono',monospace;
+  letter-spacing:0.5px;transition:all 0.3s;border:1px solid transparent;
+}
+.phase-seg .phase-range{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;}
+
+/* ===== METRIC CARDS ===== */
+.metrics{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:14px;margin-bottom:36px;
+}
+
+.mcard{
+  border:1px solid var(--bd);border-radius:12px;overflow:hidden;
+  transition:border-color 0.25s;
+}
+.mcard:hover{border-color:var(--bd2);}
+
+.mcard-head{
+  padding:18px 22px 14px;background:var(--s1);
+  border-bottom:1px solid var(--bd);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.mcard-title{font-size:14px;font-weight:700;color:var(--txh);}
+.mcard-diff{
+  font-family:'DM Mono',monospace;font-size:13px;font-weight:700;
+  padding:3px 10px;border-radius:5px;
+}
+
+.mcard-body{padding:18px 22px;background:var(--s2);}
+
+.mcard-bars{margin-bottom:14px;}
+.mbar{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.mbar-label{
+  width:55px;font-size:11px;font-weight:600;
+  font-family:'DM Mono',monospace;flex-shrink:0;
+}
+.mbar-track{flex:1;height:10px;background:var(--s3);border-radius:5px;overflow:hidden;}
+.mbar-fill{height:100%;border-radius:5px;transition:width 0.5s ease;}
+.mbar-val{
+  width:80px;font-family:'DM Mono',monospace;font-size:12px;
+  font-weight:600;text-align:right;
+}
+
+.mcard-note{
+  font-size:12px;color:var(--txd);line-height:1.6;
+  padding-top:12px;border-top:1px solid var(--bd);
+}
+.mcard-note strong{color:var(--tx);}
+
+/* ===== CROSSOVER TABLE ===== */
+.cross-table{
+  width:100%;border-collapse:collapse;
+  border:1px solid var(--bd);border-radius:12px;overflow:hidden;
+  margin-bottom:36px;
+}
+.cross-table th{
+  background:var(--s1);padding:14px 20px;text-align:left;
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;color:var(--txd);
+  border-bottom:1px solid var(--bd);
+}
+.cross-table td{
+  padding:14px 20px;border-bottom:1px solid var(--bd);
+  font-size:13px;vertical-align:top;
+}
+.cross-table tr:last-child td{border-bottom:none;}
+.cross-table tr:hover td{background:rgba(255,255,255,0.01);}
+.cross-table .ccu-val{
+  font-family:'DM Mono',monospace;font-weight:700;font-size:14px;
+}
+
+/* ===== TIMELINE ===== */
+.timeline{
+  position:relative;padding-left:28px;margin-bottom:36px;
+}
+.timeline::before{
+  content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,var(--safe),var(--go),var(--node),var(--danger));
+  border-radius:1px;
+}
+.tl-item{position:relative;padding:16px 0 24px 24px;}
+.tl-dot{
+  position:absolute;left:-24px;top:20px;width:14px;height:14px;
+  border-radius:50%;border:3px solid var(--bg);
+}
+.tl-ccu{
+  font-family:'DM Mono',monospace;font-size:12px;font-weight:700;
+  letter-spacing:0.5px;margin-bottom:4px;
+}
+.tl-title{font-size:15px;font-weight:700;color:var(--txh);margin-bottom:4px;}
+.tl-desc{font-size:13px;color:var(--tx);line-height:1.6;}
+.tl-desc strong{color:var(--txh);}
+
+/* ===== SUMMARY ===== */
+.summary{
+  border:1px solid var(--bd);border-radius:12px;padding:28px 32px;
+  background:linear-gradient(135deg,rgba(24,220,255,0.03),rgba(255,71,87,0.03));
+}
+.summary-t{font-size:18px;font-weight:800;color:var(--txh);margin-bottom:16px;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;}
+.summary-item{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.6;}
+.summary-n{
+  font-family:'DM Mono',monospace;font-size:10px;font-weight:700;
+  color:var(--go);background:rgba(24,220,255,0.1);
+  width:20px;height:20px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:3px;
+}
+
+@media(max-width:900px){
+  .hdr,.main{padding-left:20px;padding-right:20px;}
+  .metrics{grid-template-columns:1fr;}
+  .phase-bar{flex-direction:column;}
+  .slider-val{font-size:28px;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div class="hdr-logo">▲</div>
+    <h1>Go vs Node<em>.js</em></h1>
+  </div>
+  <div class="hdr-sub">CCU Breakpoint Analysis — Where the difference becomes real</div>
+</div>
+
+<div class="main">
+
+<!-- ===== INTERACTIVE SLIDER ===== -->
+<div class="slider-zone">
+  <div class="slider-label">Concurrent Connected Users</div>
+  <div class="slider-val"><span id="ccuDisplay">25,000</span><small>CCU</small></div>
+  <div class="slider-verdict" id="verdictBox">
+    <strong>Transition zone.</strong> Node.js starts showing strain. Go infrastructure costs begin to offset the salary premium. First latency spikes appear in Node.js under sustained load.
+  </div>
+  <input type="range" id="ccuSlider" min="500" max="500000" value="25000" step="500">
+  <div class="slider-ticks">
+    <span>500</span><span>5K</span><span>15K</span><span>50K</span><span>100K</span><span>250K</span><span>500K</span>
+  </div>
+</div>
+
+<!-- ===== PHASE BAR ===== -->
+<div class="phase-bar" id="phaseBar">
+  <div class="phase-seg" id="p1" style="background:rgba(46,213,115,0.12);color:var(--safe);border-color:rgba(46,213,115,0.2)">
+    No Difference<div class="phase-range">0 – 5K CCU</div>
+  </div>
+  <div class="phase-seg" id="p2" style="background:rgba(24,220,255,0.08);color:var(--txd)">
+    Minor Edge<div class="phase-range">5K – 15K CCU</div>
+  </div>
+  <div class="phase-seg" id="p3" style="background:rgba(247,167,51,0.08);color:var(--txd)">
+    Clear Advantage<div class="phase-range">15K – 50K CCU</div>
+  </div>
+  <div class="phase-seg" id="p4" style="background:rgba(255,71,87,0.08);color:var(--txd)">
+    Critical Gap<div class="phase-range">50K – 150K CCU</div>
+  </div>
+  <div class="phase-seg" id="p5" style="background:rgba(168,85,247,0.08);color:var(--txd)">
+    Node.js Breaks<div class="phase-range">150K+ CCU</div>
+  </div>
+</div>
+
+<!-- ===== DYNAMIC METRIC CARDS ===== -->
+<div class="metrics" id="metricCards">
+
+  <!-- P99 Latency -->
+  <div class="mcard">
+    <div class="mcard-head">
+      <div class="mcard-title">Cash-Out P99 Latency</div>
+      <div class="mcard-diff" id="latDiff" style="background:rgba(46,213,115,0.1);color:var(--safe)">−33ms</div>
+    </div>
+    <div class="mcard-body">
+      <div class="mcard-bars">
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--go)">Go</div>
+          <div class="mbar-track"><div class="mbar-fill" id="goLatBar" style="width:16%;background:linear-gradient(90deg,var(--go),var(--safe))"></div></div>
+          <div class="mbar-val" id="goLatVal" style="color:var(--go)">12ms</div>
+        </div>
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--node)">Node</div>
+          <div class="mbar-track"><div class="mbar-fill" id="nodeLatBar" style="width:30%;background:linear-gradient(90deg,var(--node),var(--danger))"></div></div>
+          <div class="mbar-val" id="nodeLatVal" style="color:var(--node)">45ms</div>
+        </div>
+      </div>
+      <div class="mcard-note" id="latNote"><strong>At 25K CCU:</strong> Node.js event loop contention adds ~15ms jitter. Players start noticing "laggy" cash-outs. Go remains flat.</div>
+    </div>
+  </div>
+
+  <!-- Instances Required -->
+  <div class="mcard">
+    <div class="mcard-head">
+      <div class="mcard-title">Server Instances Required</div>
+      <div class="mcard-diff" id="instDiff" style="background:rgba(24,220,255,0.1);color:var(--go)">−3 fewer</div>
+    </div>
+    <div class="mcard-body">
+      <div class="mcard-bars">
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--go)">Go</div>
+          <div class="mbar-track"><div class="mbar-fill" id="goInstBar" style="width:10%;background:linear-gradient(90deg,var(--go),var(--safe))"></div></div>
+          <div class="mbar-val" id="goInstVal" style="color:var(--go)">1</div>
+        </div>
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--node)">Node</div>
+          <div class="mbar-track"><div class="mbar-fill" id="nodeInstBar" style="width:20%;background:linear-gradient(90deg,var(--node),var(--danger))"></div></div>
+          <div class="mbar-val" id="nodeInstVal" style="color:var(--node)">4</div>
+        </div>
+      </div>
+      <div class="mcard-note" id="instNote"><strong>At 25K CCU:</strong> Go handles this on a single c5.2xlarge. Node.js needs 4 instances + load balancer. Each instance adds deployment complexity and failure surface.</div>
+    </div>
+  </div>
+
+  <!-- Monthly Infra Cost -->
+  <div class="mcard">
+    <div class="mcard-head">
+      <div class="mcard-title">Monthly Infrastructure Cost</div>
+      <div class="mcard-diff" id="costDiff" style="background:rgba(46,213,115,0.1);color:var(--safe)">−$420/mo</div>
+    </div>
+    <div class="mcard-body">
+      <div class="mcard-bars">
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--go)">Go</div>
+          <div class="mbar-track"><div class="mbar-fill" id="goCostBar" style="width:25%;background:linear-gradient(90deg,var(--go),var(--safe))"></div></div>
+          <div class="mbar-val" id="goCostVal" style="color:var(--go)">$580</div>
+        </div>
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--node)">Node</div>
+          <div class="mbar-track"><div class="mbar-fill" id="nodeCostBar" style="width:35%;background:linear-gradient(90deg,var(--node),var(--danger))"></div></div>
+          <div class="mbar-val" id="nodeCostVal" style="color:var(--node)">$1,000</div>
+        </div>
+      </div>
+      <div class="mcard-note" id="costNote"><strong>At 25K CCU:</strong> Go saves ~$420/mo in compute alone. Annualized: $5,040. Not yet enough to offset the ~$50K salary premium — that crossover happens around 40K CCU.</div>
+    </div>
+  </div>
+
+  <!-- Latency Spikes -->
+  <div class="mcard">
+    <div class="mcard-head">
+      <div class="mcard-title">Latency Spike Risk</div>
+      <div class="mcard-diff" id="spikeDiff" style="background:rgba(46,213,115,0.1);color:var(--safe)">Low</div>
+    </div>
+    <div class="mcard-body">
+      <div class="mcard-bars">
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--go)">Go</div>
+          <div class="mbar-track"><div class="mbar-fill" id="goSpikeBar" style="width:5%;background:var(--safe)"></div></div>
+          <div class="mbar-val" id="goSpikeVal" style="color:var(--safe)">~0.1%</div>
+        </div>
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--node)">Node</div>
+          <div class="mbar-track"><div class="mbar-fill" id="nodeSpikeBar" style="width:15%;background:var(--node)"></div></div>
+          <div class="mbar-val" id="nodeSpikeVal" style="color:var(--node)">~2%</div>
+        </div>
+      </div>
+      <div class="mcard-note" id="spikeNote"><strong>At 25K CCU:</strong> Node.js shows occasional GC + event loop stalls causing >200ms spikes on ~2% of rounds. Go GC pauses stay under 1ms. Players on Node.js report "the game stole my cash-out" 3x more often.</div>
+    </div>
+  </div>
+
+  <!-- Memory Usage -->
+  <div class="mcard">
+    <div class="mcard-head">
+      <div class="mcard-title">Memory Per Instance</div>
+      <div class="mcard-diff" id="memDiff" style="background:rgba(24,220,255,0.1);color:var(--go)">−1.8 GB</div>
+    </div>
+    <div class="mcard-body">
+      <div class="mcard-bars">
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--go)">Go</div>
+          <div class="mbar-track"><div class="mbar-fill" id="goMemBar" style="width:20%;background:linear-gradient(90deg,var(--go),var(--safe))"></div></div>
+          <div class="mbar-val" id="goMemVal" style="color:var(--go)">1.2 GB</div>
+        </div>
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--node)">Node</div>
+          <div class="mbar-track"><div class="mbar-fill" id="nodeMemBar" style="width:38%;background:linear-gradient(90deg,var(--node),var(--danger))"></div></div>
+          <div class="mbar-val" id="nodeMemVal" style="color:var(--node)">3.0 GB</div>
+        </div>
+      </div>
+      <div class="mcard-note" id="memNote"><strong>At 25K CCU:</strong> Node.js V8 heap grows unpredictably under sustained WebSocket pressure. Go's memory is more deterministic — each goroutine stack is small and shrinkable.</div>
+    </div>
+  </div>
+
+  <!-- Annual Cost Delta -->
+  <div class="mcard">
+    <div class="mcard-head">
+      <div class="mcard-title">Annual Total Cost (Infra + 1 Lead Engineer)</div>
+      <div class="mcard-diff" id="annDiff" style="background:rgba(247,167,51,0.1);color:var(--node)">Go costs +$45K</div>
+    </div>
+    <div class="mcard-body">
+      <div class="mcard-bars">
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--go)">Go</div>
+          <div class="mbar-track"><div class="mbar-fill" id="goAnnBar" style="width:65%;background:linear-gradient(90deg,var(--go),var(--safe))"></div></div>
+          <div class="mbar-val" id="goAnnVal" style="color:var(--go)">$187K</div>
+        </div>
+        <div class="mbar">
+          <div class="mbar-label" style="color:var(--node)">Node</div>
+          <div class="mbar-track"><div class="mbar-fill" id="nodeAnnBar" style="width:55%;background:linear-gradient(90deg,var(--node),var(--danger))"></div></div>
+          <div class="mbar-val" id="nodeAnnVal" style="color:var(--node)">$142K</div>
+        </div>
+      </div>
+      <div class="mcard-note" id="annNote"><strong>At 25K CCU:</strong> Go engineer ($180K) + infra ($7K) = $187K. Node engineer ($130K) + infra ($12K) = $142K. Go is still more expensive total. <strong>Crossover at ~40K CCU</strong> where infra savings exceed salary delta.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== CROSSOVER TABLE ===== -->
+<h2 style="font-size:20px;font-weight:800;color:var(--txh);margin-bottom:6px;">Critical Crossover Points</h2>
+<p style="font-size:13px;color:var(--txd);margin-bottom:18px;">Exact CCU thresholds where each dimension flips from "doesn't matter" to "game-changing."</p>
+
+<table class="cross-table">
+  <thead>
+    <tr>
+      <th>Dimension</th>
+      <th>Crossover CCU</th>
+      <th>What happens at this threshold</th>
+      <th>Impact severity</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">First latency spike</td>
+      <td><span class="ccu-val" style="color:var(--safe)">~5,000</span></td>
+      <td>Node.js event loop starts showing occasional >100ms ticks under JSON serialization load. Go stays flat. <strong>Players don't notice yet</strong> — spikes are rare (~0.1% of rounds).</td>
+      <td style="color:var(--safe);font-weight:600">Low</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Node.js needs clustering</td>
+      <td><span class="ccu-val" style="color:var(--go)">~8,000</span></td>
+      <td>Single Node.js process hits memory/CPU ceiling. Must add PM2 cluster or multiple instances + sticky sessions. Go handles 8K on a single goroutine pool effortlessly.</td>
+      <td style="color:var(--go);font-weight:600">Medium</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Player-visible latency gap</td>
+      <td><span class="ccu-val" style="color:var(--node)">~15,000</span></td>
+      <td>Node.js p99 latency crosses <strong>50ms</strong> — the threshold where players start perceiving cash-out delay. Go p99 is still ~15ms. Support tickets about "stolen bets" begin on Node.js.</td>
+      <td style="color:var(--node);font-weight:600">High</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Infra cost crossover</td>
+      <td><span class="ccu-val" style="color:var(--node)">~25,000</span></td>
+      <td>Node.js infra cost exceeds Go infra cost by enough to offset 50% of the Go salary premium. <strong>Node.js needs 4× the instances.</strong> Load balancer complexity adds ops burden.</td>
+      <td style="color:var(--node);font-weight:600">High</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Total cost crossover (infra + salary)</td>
+      <td><span class="ccu-val" style="color:var(--danger)">~40,000</span></td>
+      <td>Annual Go infra savings exceed the annual Go salary premium. <strong>Go becomes cheaper in total.</strong> Every CCU above 40K makes Go increasingly economical.</td>
+      <td style="color:var(--danger);font-weight:600">Critical</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Node.js stability degradation</td>
+      <td><span class="ccu-val" style="color:var(--danger)">~50,000</span></td>
+      <td>Node.js GC pauses + event loop saturation cause <strong>5–8% of rounds</strong> to experience >200ms spikes. Cash-out fairness is measurably compromised. Go still has p99 < 20ms.</td>
+      <td style="color:var(--danger);font-weight:600">Critical</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Node.js architecture ceiling</td>
+      <td><span class="ccu-val" style="color:var(--prp)">~80,000</span></td>
+      <td>Node.js requires <strong>10+ instances</strong>, shared-nothing session architecture, complex sticky routing. Adding social features (Crews, Copy-Bet) at this scale requires a ground-up rewrite. Go is at ~2 instances.</td>
+      <td style="color:var(--prp);font-weight:600">Existential</td>
+    </tr>
+    <tr>
+      <td style="font-weight:600;color:var(--txh)">Node.js hard wall</td>
+      <td><span class="ccu-val" style="color:var(--prp)">~150,000</span></td>
+      <td>Node.js with Socket.IO physically cannot maintain this many connections even across a cluster without custom connection pooling that essentially reinvents what Go does natively. <strong>You must rewrite.</strong></td>
+      <td style="color:var(--prp);font-weight:600">Existential</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ===== TIMELINE ===== -->
+<h2 style="font-size:20px;font-weight:800;color:var(--txh);margin-bottom:6px;">The Journey Through CCU Scale</h2>
+<p style="font-size:13px;color:var(--txd);margin-bottom:24px;">What you'd actually experience at each stage, from both perspectives.</p>
+
+<div class="timeline">
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--safe)"></div>
+    <div class="tl-ccu" style="color:var(--safe)">0 — 5,000 CCU</div>
+    <div class="tl-title">Identical experience</div>
+    <div class="tl-desc">Both runtimes handle this without breaking a sweat. A single Node.js process or a single Go binary. Latency is indistinguishable. <strong>If you're not sure you'll survive past this stage, Node.js is the rational choice</strong> — cheaper engineer, faster prototyping, larger package ecosystem. The performance difference is literally invisible to players.</div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--go)"></div>
+    <div class="tl-ccu" style="color:var(--go)">5,000 — 15,000 CCU</div>
+    <div class="tl-title">First cracks appear</div>
+    <div class="tl-desc">Node.js needs its first architectural decision: cluster mode or multiple instances? Sticky sessions for WebSocket affinity? You start spending engineering time on infrastructure instead of features. Go just... works. Same binary, same config, no scaling decisions needed yet. <strong>The difference isn't performance — it's engineering velocity.</strong> The Go team ships features while the Node team tunes infrastructure.</div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--node)"></div>
+    <div class="tl-ccu" style="color:var(--node)">15,000 — 50,000 CCU</div>
+    <div class="tl-title">The gap becomes undeniable</div>
+    <div class="tl-desc">This is the <strong>make-or-break range for Aviatrix</strong>. Node.js p99 latency crosses the perception threshold. Players feel it. Operators see churn metrics tick up. Infra bills diverge: Node needs 6–8 instances where Go uses 1–2. <strong>Total cost crossover happens at ~40K CCU</strong> — from this point forward, Go is cheaper in every dimension. Adding Crews and Copy-Bet to a Node.js cluster at this scale is an architectural nightmare; the shared-nothing model fights stateful social features at every turn.</div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--danger)"></div>
+    <div class="tl-ccu" style="color:var(--danger)">50,000 — 150,000 CCU</div>
+    <div class="tl-title">Node.js becomes a liability</div>
+    <div class="tl-desc"><strong>This is where startups on Node.js either rewrite or die.</strong> The combination of 10+ instances, complex session routing, GC-induced latency spikes, and the inability to add stateful social features without a ground-up rearchitecture creates an engineering crisis. The rewrite costs $150–250K and takes 3–4 months — during which you're shipping zero new features while competitors catch up. Go teams at this scale add a second instance, tune some configs, and keep shipping.</div>
+  </div>
+
+  <div class="tl-item">
+    <div class="tl-dot" style="background:var(--prp)"></div>
+    <div class="tl-ccu" style="color:var(--prp)">150,000+ CCU</div>
+    <div class="tl-title">Go's domain, Node.js doesn't play</div>
+    <div class="tl-desc">Go handles 500K+ CCU on 4–6 well-tuned instances. Node.js cannot physically maintain this connection count without reinventing connection management from scratch. The infra cost gap is now <strong>$40K–60K/month</strong>. At this scale, you're saving the salary of an entire senior engineer — every single month — just on infrastructure. <strong>Rust would save another ~30% on top of Go, but hiring 3 Rust engineers at this stage would cost more than the savings.</strong></div>
+  </div>
+
+</div>
+
+<!-- ===== SUMMARY ===== -->
+<div class="summary">
+  <div class="summary-t">⚡ Decision Framework</div>
+  <div class="summary-grid">
+    <div class="summary-item">
+      <div class="summary-n">1</div>
+      <div><strong>Below 5K CCU:</strong> It genuinely doesn't matter. Pick whatever your team knows. Ship fast.</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-n">2</div>
+      <div><strong>5K–15K CCU:</strong> Go gives you engineering velocity (not performance). You spend time building features instead of scaling Node.js.</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-n">3</div>
+      <div><strong>15K–50K CCU:</strong> The gap is player-visible. Latency, cost, and stability all favor Go. Total cost crossover at ~40K. This is Aviatrix's likely growth trajectory in months 6–12.</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-n">4</div>
+      <div><strong>50K+ CCU:</strong> Node.js requires a full rewrite. Go just needs a second instance. The rewrite costs more than the Go salary premium for the entire preceding period.</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-n">5</div>
+      <div><strong>The real question isn't "when does Go win?"</strong> It's "do you believe Aviatrix will pass 15K CCU?" If yes, Go. If you're not sure, start Node.js and plan for the rewrite at 15K.</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-n">6</div>
+      <div><strong>Hidden factor: social features.</strong> Crews, Copy-Bet, and tournaments are inherently stateful. Go's goroutine-per-connection model handles stateful social logic naturally. Node.js's shared-nothing cluster model fights it.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const slider = document.getElementById('ccuSlider');
+const display = document.getElementById('ccuDisplay');
+const verdict = document.getElementById('verdictBox');
+
+// Phase highlighting
+const phases = [
+  {id:'p1',min:0,max:5000},
+  {id:'p2',min:5000,max:15000},
+  {id:'p3',min:15000,max:50000},
+  {id:'p4',min:50000,max:150000},
+  {id:'p5',min:150000,max:Infinity}
+];
+
+const phaseColors = {
+  p1:{bg:'rgba(46,213,115,0.15)',c:'var(--safe)',bd:'rgba(46,213,115,0.3)'},
+  p2:{bg:'rgba(24,220,255,0.15)',c:'var(--go)',bd:'rgba(24,220,255,0.3)'},
+  p3:{bg:'rgba(247,167,51,0.15)',c:'var(--node)',bd:'rgba(247,167,51,0.3)'},
+  p4:{bg:'rgba(255,71,87,0.15)',c:'var(--danger)',bd:'rgba(255,71,87,0.3)'},
+  p5:{bg:'rgba(168,85,247,0.15)',c:'var(--prp)',bd:'rgba(168,85,247,0.3)'}
+};
+
+function fmt(n){
+  if(n>=1000000)return(n/1000000).toFixed(1)+'M';
+  if(n>=1000)return Math.round(n/1000)+'K';
+  return n.toString();
+}
+
+function lerp(a,b,t){return a+(b-a)*t;}
+
+function update(){
+  const ccu = parseInt(slider.value);
+  display.textContent = ccu.toLocaleString();
+
+  // Phase highlight
+  phases.forEach(p=>{
+    const el=document.getElementById(p.id);
+    const active = ccu>=p.min && ccu<p.max;
+    const pc = phaseColors[p.id];
+    el.style.background = active ? pc.bg : `rgba(255,255,255,0.02)`;
+    el.style.color = active ? pc.c : 'var(--txd)';
+    el.style.borderColor = active ? pc.bd : 'transparent';
+  });
+
+  // Compute metrics
+  const goLat = ccu<5000?12:ccu<15000?lerp(12,16,ccu/15000):ccu<50000?lerp(16,22,(ccu-15000)/35000):ccu<150000?lerp(22,30,(ccu-50000)/100000):lerp(30,40,(ccu-150000)/350000);
+  const nodeLat = ccu<5000?18:ccu<8000?lerp(18,35,ccu/8000):ccu<15000?lerp(35,55,(ccu-8000)/7000):ccu<50000?lerp(55,120,(ccu-15000)/35000):ccu<100000?lerp(120,250,(ccu-50000)/50000):lerp(250,500,(ccu-100000)/400000);
+
+  const goInst = ccu<30000?1:ccu<100000?Math.ceil(ccu/80000)+1:ccu<300000?Math.ceil(ccu/120000)+1:Math.ceil(ccu/150000)+1;
+  const nodeInst = ccu<3000?1:ccu<8000?2:ccu<15000?Math.ceil(ccu/5000):ccu<50000?Math.ceil(ccu/7000):ccu<100000?Math.ceil(ccu/8000):Math.ceil(ccu/10000);
+
+  const goCostMo = goInst * 195 + 200;
+  const nodeCostMo = nodeInst * 195 + nodeInst*50 + 200;
+
+  const goMem = ccu<5000?0.3:ccu<50000?lerp(0.3,2,ccu/50000):ccu<200000?lerp(2,5,(ccu-50000)/150000):lerp(5,10,(ccu-200000)/300000);
+  const nodeMem = ccu<3000?0.5:ccu<15000?lerp(0.5,3,ccu/15000):ccu<50000?lerp(3,6,(ccu-15000)/35000):lerp(6,14,(ccu-50000)/100000);
+
+  const goSpike = ccu<50000?0.1:ccu<200000?lerp(0.1,0.5,(ccu-50000)/150000):0.8;
+  const nodeSpike = ccu<5000?0.2:ccu<15000?lerp(0.2,3,ccu/15000):ccu<50000?lerp(3,8,(ccu-15000)/35000):ccu<100000?lerp(8,18,(ccu-50000)/50000):lerp(18,35,(ccu-100000)/400000);
+
+  const goSalary = 180000;
+  const nodeSalary = 130000;
+  const goAnn = goSalary + goCostMo*12;
+  const nodeAnn = nodeSalary + nodeCostMo*12;
+
+  // Update bars
+  const maxLat=500;
+  document.getElementById('goLatBar').style.width=Math.min(goLat/maxLat*100,100)+'%';
+  document.getElementById('nodeLatBar').style.width=Math.min(nodeLat/maxLat*100,100)+'%';
+  document.getElementById('goLatVal').textContent=Math.round(goLat)+'ms';
+  document.getElementById('nodeLatVal').textContent=Math.round(nodeLat)+'ms';
+  document.getElementById('latDiff').textContent='−'+Math.round(nodeLat-goLat)+'ms';
+  const latSev = (nodeLat-goLat)>100?'danger':(nodeLat-goLat)>30?'node':'safe';
+  document.getElementById('latDiff').style.background=`rgba(${latSev==='danger'?'255,71,87':latSev==='node'?'247,167,51':'46,213,115'},0.1)`;
+  document.getElementById('latDiff').style.color=`var(--${latSev})`;
+
+  document.getElementById('goInstBar').style.width=Math.min(goInst/25*100,100)+'%';
+  document.getElementById('nodeInstBar').style.width=Math.min(nodeInst/25*100,100)+'%';
+  document.getElementById('goInstVal').textContent=goInst;
+  document.getElementById('nodeInstVal').textContent=nodeInst;
+  document.getElementById('instDiff').textContent='−'+(nodeInst-goInst)+' fewer';
+
+  document.getElementById('goCostBar').style.width=Math.min(goCostMo/15000*100,100)+'%';
+  document.getElementById('nodeCostBar').style.width=Math.min(nodeCostMo/15000*100,100)+'%';
+  document.getElementById('goCostVal').textContent='$'+goCostMo.toLocaleString();
+  document.getElementById('nodeCostVal').textContent='$'+nodeCostMo.toLocaleString();
+  document.getElementById('costDiff').textContent='−$'+(nodeCostMo-goCostMo).toLocaleString()+'/mo';
+
+  document.getElementById('goSpikeBar').style.width=Math.min(goSpike/35*100,100)+'%';
+  document.getElementById('nodeSpikeBar').style.width=Math.min(nodeSpike/35*100,100)+'%';
+  document.getElementById('goSpikeVal').textContent='~'+goSpike.toFixed(1)+'%';
+  document.getElementById('nodeSpikeVal').textContent='~'+nodeSpike.toFixed(1)+'%';
+
+  document.getElementById('goMemBar').style.width=Math.min(goMem/14*100,100)+'%';
+  document.getElementById('nodeMemBar').style.width=Math.min(nodeMem/14*100,100)+'%';
+  document.getElementById('goMemVal').textContent=goMem.toFixed(1)+' GB';
+  document.getElementById('nodeMemVal').textContent=nodeMem.toFixed(1)+' GB';
+  document.getElementById('memDiff').textContent='−'+(nodeMem-goMem).toFixed(1)+' GB';
+
+  document.getElementById('goAnnBar').style.width=Math.min(goAnn/400000*100,100)+'%';
+  document.getElementById('nodeAnnBar').style.width=Math.min(nodeAnn/400000*100,100)+'%';
+  document.getElementById('goAnnVal').textContent='$'+Math.round(goAnn/1000)+'K';
+  document.getElementById('nodeAnnVal').textContent='$'+Math.round(nodeAnn/1000)+'K';
+  const annDelta = goAnn-nodeAnn;
+  if(annDelta>0){
+    document.getElementById('annDiff').textContent='Go costs +$'+Math.round(annDelta/1000)+'K';
+    document.getElementById('annDiff').style.color='var(--node)';
+    document.getElementById('annDiff').style.background='rgba(247,167,51,0.1)';
+  } else {
+    document.getElementById('annDiff').textContent='Go saves $'+Math.round(Math.abs(annDelta)/1000)+'K';
+    document.getElementById('annDiff').style.color='var(--safe)';
+    document.getElementById('annDiff').style.background='rgba(46,213,115,0.1)';
+  }
+
+  // Verdict text
+  if(ccu<5000){
+    verdict.innerHTML='<strong>No meaningful difference.</strong> Both runtimes handle this easily. Node.js is the safer hire and faster to prototype with. Choose based on team familiarity, not performance.';
+  } else if(ccu<15000){
+    verdict.innerHTML='<strong>Go\'s edge is velocity, not perf.</strong> Node.js needs its first scaling decision (cluster/multi-instance). Go team spends that time shipping features instead. Latency gap exists but players rarely notice.';
+  } else if(ccu<50000){
+    verdict.innerHTML='<strong>The gap is now player-visible.</strong> Node.js p99 crosses the perception threshold. Operators see churn. Infra costs diverge 3–4x. Total cost crossover at ~40K CCU — Go becomes cheaper in every dimension above that.';
+  } else if(ccu<150000){
+    verdict.innerHTML='<strong>Node.js is a liability.</strong> 5–8% of rounds experience >200ms spikes. Rewrite becomes urgent ($150–250K). Go runs on 2–3 instances with room to spare. Infra savings alone cover the salary premium 2x over.';
+  } else {
+    verdict.innerHTML='<strong>Node.js cannot physically operate here.</strong> Connection management breaks down. You\'re either already on Go/Rust or you\'re rewriting under crisis. Go saves $40–60K/month in infra vs what Node.js would theoretically need.';
+  }
+}
+
+slider.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>

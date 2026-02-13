@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviatrix.bet — Competitive Landscape</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080d;
+    --surface: #101018;
+    --surface2: #16161f;
+    --border: #1c1c2c;
+    --text: #d8d8e4;
+    --text-dim: #6a6a80;
+    --text-head: #f0f0f6;
+    --red: #e84545;
+    --orange: #f7a733;
+    --cyan: #00d2ff;
+    --green: #22c55e;
+    --purple: #a855f7;
+    --pink: #ec4899;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  }
+
+  .header { padding: 44px 48px 28px; border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .logo-mark {
+    width: 36px; height: 36px; background: linear-gradient(135deg, var(--red), var(--orange));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 800; color: #fff; box-shadow: 0 0 20px rgba(232,69,69,0.12);
+  }
+  .brand h1 { font-family: 'Space Mono', monospace; font-size: 22px; color: var(--text-head); }
+  .brand h1 span { color: var(--red); }
+  .page-sub {
+    font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace;
+    letter-spacing: 2.5px; text-transform: uppercase; padding-left: 50px;
+  }
+
+  .content { padding: 32px 48px 56px; max-width: 1500px; margin: 0 auto; }
+
+  /* ---- Quadrant Chart ---- */
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+  }
+  .section-title {
+    font-size: 24px; font-weight: 700; color: var(--text-head); margin-bottom: 6px;
+  }
+  .section-desc {
+    font-size: 13.5px; color: var(--text-dim); margin-bottom: 28px; max-width: 700px; line-height: 1.6;
+  }
+
+  .quadrant-wrapper {
+    position: relative; width: 100%; max-width: 820px; aspect-ratio: 1; margin: 0 auto 48px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden;
+  }
+
+  /* Grid lines */
+  .q-grid { position: absolute; inset: 60px; }
+  .q-grid::before, .q-grid::after {
+    content: ''; position: absolute; background: var(--border);
+  }
+  .q-grid::before { left: 50%; top: 0; bottom: 0; width: 1px; }
+  .q-grid::after { top: 50%; left: 0; right: 0; height: 1px; }
+
+  /* Quadrant labels */
+  .q-label {
+    position: absolute; font-size: 10px; font-family: 'Space Mono', monospace;
+    letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.08);
+    font-weight: 700;
+  }
+  .q-label.tl { top: 72px; left: 72px; }
+  .q-label.tr { top: 72px; right: 72px; text-align: right; }
+  .q-label.bl { bottom: 72px; left: 72px; }
+  .q-label.br { bottom: 72px; right: 72px; text-align: right; }
+
+  /* Axis labels */
+  .axis-label {
+    position: absolute; font-size: 10px; font-family: 'Space Mono', monospace;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim);
+  }
+  .axis-x-left { bottom: 28px; left: 60px; }
+  .axis-x-right { bottom: 28px; right: 60px; }
+  .axis-y-bottom { left: 12px; bottom: 60px; writing-mode: vertical-rl; transform: rotate(180deg); }
+  .axis-y-top { left: 12px; top: 60px; writing-mode: vertical-rl; transform: rotate(180deg); }
+  .axis-title-x {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 1px;
+    color: var(--cyan); text-transform: uppercase;
+  }
+  .axis-title-y {
+    position: absolute; left: -6px; top: 50%; transform: translateY(-50%) rotate(-90deg);
+    font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 1px;
+    color: var(--cyan); text-transform: uppercase; white-space: nowrap;
+  }
+
+  /* Player dots */
+  .player {
+    position: absolute; transform: translate(-50%, -50%); cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .player:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 10; }
+
+  .player-dot {
+    width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 800; font-size: 13px; color: #fff;
+    border: 2px solid rgba(255,255,255,0.15); position: relative;
+  }
+
+  .player-name {
+    position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    font-size: 10px; font-family: 'Space Mono', monospace; letter-spacing: 0.5px;
+    white-space: nowrap; color: var(--text-dim); font-weight: 400;
+  }
+
+  .player.aviatrix .player-dot {
+    width: 52px; height: 52px; font-size: 16px;
+    background: linear-gradient(135deg, var(--red), var(--orange));
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 0 28px rgba(232,69,69,0.35), 0 0 60px rgba(232,69,69,0.12);
+    animation: pulse 2.5s ease infinite;
+  }
+  .player.aviatrix .player-name { color: var(--text-head); font-weight: 700; font-size: 11px; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 28px rgba(232,69,69,0.35), 0 0 60px rgba(232,69,69,0.12); }
+    50% { box-shadow: 0 0 36px rgba(232,69,69,0.5), 0 0 80px rgba(232,69,69,0.2); }
+  }
+
+  /* Whitespace zone */
+  .whitespace-zone {
+    position: absolute; border: 2px dashed rgba(0,210,255,0.2); border-radius: 16px;
+    background: rgba(0,210,255,0.03);
+  }
+  .whitespace-label {
+    position: absolute; top: 10px; right: 14px; font-size: 9px;
+    font-family: 'Space Mono', monospace; letter-spacing: 1.5px;
+    text-transform: uppercase; color: rgba(0,210,255,0.45);
+  }
+
+  /* Tooltip */
+  .tooltip {
+    display: none; position: absolute; background: #1a1a28; border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; width: 260px; z-index: 100;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5); pointer-events: none;
+  }
+  .tooltip.visible { display: block; }
+  .tooltip-name { font-size: 14px; font-weight: 700; color: var(--text-head); margin-bottom: 2px; }
+  .tooltip-game { font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace; margin-bottom: 10px; }
+  .tooltip-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .tooltip-row:last-child { border-bottom: none; }
+  .tooltip-key { color: var(--text-dim); }
+  .tooltip-val { color: var(--text-head); font-weight: 500; }
+
+  /* ---- Feature Matrix ---- */
+  .matrix-section { margin-top: 20px; }
+
+  .matrix-table-wrap {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+    min-width: 900px;
+  }
+
+  thead th {
+    padding: 14px 16px; text-align: left; font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-dim); border-bottom: 1px solid var(--border);
+    background: var(--surface2); position: sticky; top: 0;
+  }
+
+  thead th:first-child { border-radius: 12px 0 0 0; }
+  thead th:last-child { border-radius: 0 12px 0 0; }
+
+  tbody td {
+    padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.025);
+    color: var(--text);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.015); }
+
+  .feat-name { font-weight: 600; color: var(--text-head); white-space: nowrap; }
+
+  .cell-yes {
+    color: var(--green); font-weight: 600;
+  }
+  .cell-no { color: #444; }
+  .cell-partial { color: var(--orange); font-weight: 500; }
+  .cell-unique { color: var(--cyan); font-weight: 700; }
+
+  .provider-col {
+    text-align: center; min-width: 100px;
+  }
+
+  .provider-col.aviatrix-col {
+    background: rgba(232,69,69,0.04);
+    border-left: 1px solid rgba(232,69,69,0.1);
+    border-right: 1px solid rgba(232,69,69,0.1);
+  }
+
+  thead .aviatrix-col {
+    color: var(--red);
+    background: rgba(232,69,69,0.08);
+  }
+
+  /* Key insight cards */
+  .insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+
+  .insight-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px 20px; position: relative; overflow: hidden;
+  }
+  .insight-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .insight-card:nth-child(1)::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .insight-card:nth-child(2)::before { background: linear-gradient(90deg, var(--cyan), var(--green)); }
+  .insight-card:nth-child(3)::before { background: linear-gradient(90deg, var(--purple), var(--pink)); }
+
+  .insight-label {
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+  }
+  .insight-title { font-size: 15px; font-weight: 700; color: var(--text-head); margin-bottom: 6px; }
+  .insight-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
+
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 40px 0; }
+
+  @media (max-width: 900px) {
+    .content { padding: 24px 20px; }
+    .quadrant-wrapper { aspect-ratio: auto; height: 500px; }
+    .insights-grid { grid-template-columns: 1fr; }
+    .header { padding: 32px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="logo-mark">A</div>
+    <h1>aviatrix<span>.bet</span></h1>
+  </div>
+  <div class="page-sub">Competitive Landscape — Crash Game Provider Market Map</div>
+</div>
+
+<div class="content">
+
+  <!-- QUADRANT MAP -->
+  <div class="section-label">Strategic Positioning</div>
+  <div class="section-title">Where Aviatrix Plays — And Where No One Else Does</div>
+  <div class="section-desc">Two axes that matter most to B2B buyers: how social/multiplayer the experience is (x-axis), and how much built-in viral distribution the game generates (y-axis). The upper-right quadrant is empty today — that's the opportunity.</div>
+
+  <div class="quadrant-wrapper" id="quadrant">
+    <div class="q-grid"></div>
+
+    <!-- Axis labels -->
+    <div class="axis-title-x">Social Depth →</div>
+    <div class="axis-title-y">Viral Distribution Infrastructure →</div>
+    <div class="axis-x-left">Solitary</div>
+    <div class="axis-x-right">Multiplayer</div>
+    <div class="axis-y-bottom">No sharing</div>
+    <div class="axis-y-top">Self-distributing</div>
+
+    <!-- Quadrant labels -->
+    <div class="q-label tl">Basic game<br>social sharing</div>
+    <div class="q-label tr">Social + viral<br>← the prize</div>
+    <div class="q-label bl">Commodity<br>crash</div>
+    <div class="q-label br">Social play<br>no distribution</div>
+
+    <!-- Whitespace zone -->
+    <div class="whitespace-zone" style="top:62px; right:62px; width:42%; height:42%;"></div>
+
+    <!-- PLAYERS: positioned as % from top-left of the inner area (60px inset) -->
+    <!-- Spribe Aviator: basic chat + leaderboard, no viral tools -->
+    <div class="player" style="left:52%; top:62%;"
+         data-name="Spribe" data-game="Aviator" data-ops="2,000+" data-license="MGA, UKGC" data-social="Chat, leaderboard" data-viral="None" data-edge="3%" data-moat="Market leader, first-mover">
+      <div class="player-dot" style="background:#3b82f6;">S</div>
+      <div class="player-name">Spribe · Aviator</div>
+    </div>
+
+    <!-- SmartSoft JetX: triple UI, no social -->
+    <div class="player" style="left:38%; top:72%;"
+         data-name="SmartSoft" data-game="JetX" data-ops="500+" data-license="Georgia" data-social="Multi-bet UI" data-viral="None" data-edge="2–3%" data-moat="Jackpot mechanic, early mover">
+      <div class="player-dot" style="background:#7c3aed;">SM</div>
+      <div class="player-name">SmartSoft · JetX</div>
+    </div>
+
+    <!-- Pragmatic Spaceman: big brand, zero social -->
+    <div class="player" style="left:30%; top:68%;"
+         data-name="Pragmatic Play" data-game="Spaceman" data-ops="1,000+" data-license="MGA, UKGC, multiple" data-social="None" data-viral="None" data-edge="3.5%" data-moat="Brand, distribution network">
+      <div class="player-dot" style="background:#059669;">P</div>
+      <div class="player-name">Pragmatic · Spaceman</div>
+    </div>
+
+    <!-- Turbo Games Aero: rank system, shows other players -->
+    <div class="player" style="left:55%; top:66%;"
+         data-name="Turbo Games" data-game="Aero" data-ops="300+" data-license="Curaçao" data-social="Pilot ranks, player planes visible" data-viral="None" data-edge="3%" data-moat="Gamification layer (ranks)">
+      <div class="player-dot" style="background:#b45309;">T</div>
+      <div class="player-name">Turbo · Aero</div>
+    </div>
+
+    <!-- Galaxsys: tournament features -->
+    <div class="player" style="left:58%; top:58%;"
+         data-name="Galaxsys" data-game="Rocketon / Cash Crash" data-ops="200+" data-license="MGA, UKGC" data-social="Tournament features, multiplayer" data-viral="None" data-edge="3–4%" data-moat="Tournament integration">
+      <div class="player-dot" style="background:#0891b2;">G</div>
+      <div class="player-name">Galaxsys</div>
+    </div>
+
+    <!-- BGaming Space XY: dual cashout, no social -->
+    <div class="player" style="left:35%; top:74%;"
+         data-name="BGaming" data-game="Space XY" data-ops="400+" data-license="Curaçao, MGA" data-social="Dual cash-out" data-viral="None" data-edge="3%" data-moat="Dual cash-out mechanic">
+      <div class="player-dot" style="background:#be185d;">B</div>
+      <div class="player-name">BGaming · Space XY</div>
+    </div>
+
+    <!-- Onlyplay: some gamification -->
+    <div class="player" style="left:48%; top:64%;"
+         data-name="Onlyplay" data-game="CrashX / Lucky Crumbling" data-ops="200+" data-license="Curaçao" data-social="Skill features, progress save" data-viral="Minimal" data-edge="3%" data-moat="Gamification, game variety">
+      <div class="player-dot" style="background:#6d28d9;">O</div>
+      <div class="player-name">Onlyplay</div>
+    </div>
+
+    <!-- Bustabit: OG, provably fair, crypto only -->
+    <div class="player" style="left:45%; top:76%;"
+         data-name="Bustabit" data-game="Bustabit (OG)" data-ops="Direct only" data-license="Unlicensed" data-social="Chat room" data-viral="None" data-edge="1%" data-moat="OG credibility, crypto-native">
+      <div class="player-dot" style="background:#525252;">Bu</div>
+      <div class="player-name">Bustabit (OG)</div>
+    </div>
+
+    <!-- AVIATRIX: top-right -->
+    <div class="player aviatrix" style="left:80%; top:22%;"
+         data-name="Aviatrix" data-game="Social Crash Platform" data-ops="Target: 500+ (2026)" data-license="GLI-certified (target MGA, UKGC)" data-social="Crews, Squads, Copy-Bet, Survivor Lobbies, Pilot's Seat" data-viral="Black Box, Crash Clips, QR deep-links, Crew invites" data-edge="3–5%" data-moat="Only social-first crash with built-in distribution">
+      <div class="player-dot">A</div>
+      <div class="player-name">Aviatrix · Social Crash</div>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+      <div class="tooltip-name" id="tt-name"></div>
+      <div class="tooltip-game" id="tt-game"></div>
+      <div class="tooltip-row"><span class="tooltip-key">Operators</span><span class="tooltip-val" id="tt-ops"></span></div>
+      <div class="tooltip-row"><span class="tooltip-key">Licenses</span><span class="tooltip-val" id="tt-license"></span></div>
+      <div class="tooltip-row"><span class="tooltip-key">Social features</span><span class="tooltip-val" id="tt-social"></span></div>
+      <div class="tooltip-row"><span class="tooltip-key">Viral tools</span><span class="tooltip-val" id="tt-viral"></span></div>
+      <div class="tooltip-row"><span class="tooltip-key">House edge</span><span class="tooltip-val" id="tt-edge"></span></div>
+      <div class="tooltip-row"><span class="tooltip-key">Moat</span><span class="tooltip-val" id="tt-moat"></span></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FEATURE MATRIX -->
+  <div class="matrix-section">
+    <div class="section-label">Feature Comparison</div>
+    <div class="section-title">Capability Matrix — Crash Providers vs. Aviatrix</div>
+    <div class="section-desc">Green = ships today. Orange = partial or basic. Cyan = unique to Aviatrix. The pattern: every competitor clusters around the same feature set. Aviatrix owns an entire column of capabilities no one else has.</div>
+
+    <div class="matrix-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th class="provider-col">Spribe<br><span style="font-weight:400;opacity:0.6">Aviator</span></th>
+            <th class="provider-col">SmartSoft<br><span style="font-weight:400;opacity:0.6">JetX</span></th>
+            <th class="provider-col">Pragmatic<br><span style="font-weight:400;opacity:0.6">Spaceman</span></th>
+            <th class="provider-col">Turbo<br><span style="font-weight:400;opacity:0.6">Aero</span></th>
+            <th class="provider-col">Galaxsys<br><span style="font-weight:400;opacity:0.6">Rocketon</span></th>
+            <th class="provider-col aviatrix-col">Aviatrix<br><span style="font-weight:400;opacity:0.6">Social Crash</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Core -->
+          <tr>
+            <td class="feat-name">Provably Fair RNG</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-partial">Partial</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col aviatrix-col cell-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Auto Cash-Out</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col aviatrix-col cell-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Multi-Bet per Round</td>
+            <td class="provider-col cell-yes">2 bets</td>
+            <td class="provider-col cell-yes">3 bets</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-yes">2 bets</td>
+            <td class="provider-col cell-yes">2 bets</td>
+            <td class="provider-col aviatrix-col cell-yes">2 bets</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Live Chat</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-partial">Basic</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-partial">Basic</td>
+            <td class="provider-col cell-partial">Basic</td>
+            <td class="provider-col aviatrix-col cell-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Mobile-First / HTML5</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col aviatrix-col cell-yes">✓</td>
+          </tr>
+          <!-- Social Layer -->
+          <tr><td colspan="7" style="padding:6px 16px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,0.015);">Social & Multiplayer</td></tr>
+          <tr>
+            <td class="feat-name">Crew / Squad System</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Unique</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Copy-Bet / Follow Pilot</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Unique</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Communal Shield / Group Safety</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Unique</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Streamer Lobby Hosting</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Unique</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Survivor / Tournament Mode</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-partial">Basic</td>
+            <td class="provider-col aviatrix-col cell-unique">★ 100→1 Elimination</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Player Ranks / Progression</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-yes">Pilot ranks</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-yes">Flight Records + Crew streaks</td>
+          </tr>
+          <tr>
+            <td class="feat-name">NFT / Customizable Assets</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-yes">NFT planes</td>
+          </tr>
+          <!-- Distribution -->
+          <tr><td colspan="7" style="padding:6px 16px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,0.015);">Viral Distribution</td></tr>
+          <tr>
+            <td class="feat-name">Shareable Replay Cards</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Black Box</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Native Clip Editor</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Crash Clips</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Invite-Link Distribution</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Crew Links</td>
+          </tr>
+          <tr>
+            <td class="feat-name">QR / Deep-Link to Game</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ On every share</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Playable Content (Ghost Race)</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Unique</td>
+          </tr>
+          <!-- B2B -->
+          <tr><td colspan="7" style="padding:6px 16px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);background:rgba(255,255,255,0.015);">B2B / Operator</td></tr>
+          <tr>
+            <td class="feat-name">Standard API (GCI/RGS)</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col cell-yes">✓</td>
+            <td class="provider-col aviatrix-col cell-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Operator-Branded Sharing</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col aviatrix-col cell-unique">★ White-label</td>
+          </tr>
+          <tr>
+            <td class="feat-name">Cross-Operator Tournaments</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-no">✗</td>
+            <td class="provider-col cell-partial">Basic</td>
+            <td class="provider-col aviatrix-col cell-unique">★ Survivor Lobbies</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- KEY INSIGHTS -->
+  <div class="section-label">Strategic Takeaways</div>
+  <div class="section-title">Three Insights for the Sales Deck</div>
+
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-label">Insight 01</div>
+      <div class="insight-title">The entire market clusters in one quadrant</div>
+      <div class="insight-desc">Every crash provider — Spribe, SmartSoft, Pragmatic, Turbo — occupies the same position: solitary gameplay, no viral tools. They compete on visuals and house edge. That's a feature war with no moat. Aviatrix competes on a different axis entirely.</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-label">Insight 02</div>
+      <div class="insight-title">11 unique capabilities, zero overlap</div>
+      <div class="insight-desc">In the feature matrix, Aviatrix has 11 capabilities marked "★ Unique" — Crews, Copy-Bet, Black Box, Crash Clips, etc. No competitor has even one of these. This isn't incremental improvement; it's a category expansion from "crash game" to "social crash platform."</div>
+    </div>
+    <div class="insight-card">
+      <div class="insight-label">Insight 03</div>
+      <div class="insight-title">Distribution is the real product</div>
+      <div class="insight-desc">Every competitor sells a game. Aviatrix sells an acquisition engine. The operator doesn't just get a new game — they get Crew invite links, branded Black Box shares, and Crash Clips that turn every player into a recruiter. That's the pitch that lands with Sofia (mid-market) and Daniel (aggregator).</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tooltip logic
+  const tooltip = document.getElementById('tooltip');
+  const quadrant = document.getElementById('quadrant');
+  const players = document.querySelectorAll('.player');
+
+  players.forEach(p => {
+    p.addEventListener('mouseenter', (e) => {
+      document.getElementById('tt-name').textContent = p.dataset.name;
+      document.getElementById('tt-game').textContent = p.dataset.game;
+      document.getElementById('tt-ops').textContent = p.dataset.ops;
+      document.getElementById('tt-license').textContent = p.dataset.license;
+      document.getElementById('tt-social').textContent = p.dataset.social;
+      document.getElementById('tt-viral').textContent = p.dataset.viral;
+      document.getElementById('tt-edge').textContent = p.dataset.edge;
+      document.getElementById('tt-moat').textContent = p.dataset.moat;
+      tooltip.classList.add('visible');
+    });
+
+    p.addEventListener('mousemove', (e) => {
+      const rect = quadrant.getBoundingClientRect();
+      let x = e.clientX - rect.left + 16;
+      let y = e.clientY - rect.top - 10;
+      if (x + 270 > rect.width) x = e.clientX - rect.left - 276;
+      if (y + 200 > rect.height) y = y - 180;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    });
+
+    p.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('visible');
+    });
+  });
+</script>
+
+</body>
+</html>
