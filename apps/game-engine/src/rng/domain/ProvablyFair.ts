@@ -1,5 +1,5 @@
 import { createHmac, createHash, randomBytes } from 'crypto';
-import { CrashPoint } from '@engine/domain/CrashPoint';
+import { CrashPoint } from '@shared/kernel/CrashPoint';
 
 export class ProvablyFair {
   static generateServerSeed(): string {

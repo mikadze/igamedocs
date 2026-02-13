@@ -1,4 +1,4 @@
-import { Bet } from '@betting/domain/Bet';
+import { Bet } from '@engine/domain/Bet';
 import { BetSnapshot } from '@shared/kernel/BetSnapshot';
 
 export function toBetSnapshot(bet: Bet): BetSnapshot {

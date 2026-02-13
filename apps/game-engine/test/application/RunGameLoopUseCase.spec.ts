@@ -13,16 +13,17 @@ import { BetStore } from '@betting/application/ports/BetStore';
 import { WalletGateway, WalletResult } from '@betting/application/ports/WalletGateway';
 import { PlaceBetCommand } from '@betting/application/commands/PlaceBetCommand';
 import { CashoutCommand } from '@betting/application/commands/CashoutCommand';
-import { Bet } from '@betting/domain/Bet';
-import { GameConfig } from '@engine/domain/GameConfig';
+import { Bet } from '@engine/domain/Bet';
+import { GameConfig } from '@shared/kernel/GameConfig';
 import { SeedChain } from '@rng/domain/SeedChain';
 import { ProvablyFair } from '@rng/domain/ProvablyFair';
 import { Money } from '@shared/kernel/Money';
 import { RoundState } from '@engine/domain/RoundState';
-import { Logger } from '@engine/application/ports/Logger';
+import { Logger } from '@shared/ports/Logger';
 import { FailedCreditStore } from '@betting/application/ports/FailedCreditStore';
 import { FailedEventStore } from '@engine/application/ports/FailedEventStore';
 import { GameEvent } from '@engine/application/GameEvent';
+import { CrashPoint } from '@shared/kernel/CrashPoint';
 
 describe('RunGameLoopUseCase', () => {
   const config: GameConfig = {
@@ -72,6 +73,11 @@ describe('RunGameLoopUseCase', () => {
   let storedBets: Map<string, Bet>;
 
   beforeEach(() => {
+    // Default to a high crash point so tests that don't test crash behavior
+    // aren't affected by random low crash points (~4% chance of instant crash).
+    // Tests that need crashes use tickCallback!(200000) where multiplier ≈ 162754 >>> 100.
+    jest.spyOn(ProvablyFair, 'calculateCrashPoint').mockReturnValue(CrashPoint.of(100));
+
     const terminalSeed = ProvablyFair.generateServerSeed();
     seedChain = new SeedChain(terminalSeed, 100);
 
@@ -171,6 +177,7 @@ describe('RunGameLoopUseCase', () => {
 
   afterEach(() => {
     useCase.stop();
+    jest.restoreAllMocks();
   });
 
   // --- Test helpers ---

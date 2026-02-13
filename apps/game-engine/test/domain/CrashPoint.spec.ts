@@ -1,4 +1,4 @@
-import { CrashPoint } from '@engine/domain/CrashPoint';
+import { CrashPoint } from '@shared/kernel/CrashPoint';
 import { InvalidCrashPointError } from '@shared/kernel/DomainError';
 
 describe('CrashPoint', () => {

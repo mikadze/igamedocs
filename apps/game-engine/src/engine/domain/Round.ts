@@ -1,7 +1,7 @@
 import { RoundState, canTransition } from '@engine/domain/RoundState';
-import { CrashPoint } from '@engine/domain/CrashPoint';
-import { BetCollection } from '@betting/domain/BetCollection';
-import { Bet } from '@betting/domain/Bet';
+import { CrashPoint } from '@shared/kernel/CrashPoint';
+import { BetCollection } from '@engine/domain/BetCollection';
+import { Bet } from '@engine/domain/Bet';
 import { Money } from '@shared/kernel/Money';
 import { InvalidStateTransition } from '@shared/kernel/DomainError';
 

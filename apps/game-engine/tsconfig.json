@@ -19,7 +19,8 @@
       "@engine/*": ["src/engine/*"],
       "@betting/*": ["src/betting/*"],
       "@rng/*": ["src/rng/*"],
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@config/*": ["src/config/*"]
     }
   },
   "include": ["src/**/*", "test/**/*"],

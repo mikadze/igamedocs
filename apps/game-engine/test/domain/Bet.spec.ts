@@ -1,5 +1,5 @@
-import { Bet } from '@betting/domain/Bet';
-import { BetStatus } from '@betting/domain/BetStatus';
+import { Bet } from '@engine/domain/Bet';
+import { BetStatus } from '@engine/domain/BetStatus';
 import { Money } from '@shared/kernel/Money';
 import { BetNotActiveError, InvalidStateTransition } from '@shared/kernel/DomainError';
 

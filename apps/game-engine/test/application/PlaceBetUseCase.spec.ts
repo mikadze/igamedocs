@@ -3,12 +3,12 @@ import { PlaceBetCommand } from '@betting/application/commands/PlaceBetCommand';
 import { WalletGateway, WalletResult } from '@betting/application/ports/WalletGateway';
 import { BetStore } from '@betting/application/ports/BetStore';
 import { FailedCreditStore } from '@betting/application/ports/FailedCreditStore';
-import { GameConfig } from '@engine/domain/GameConfig';
-import { Logger } from '@engine/application/ports/Logger';
+import { GameConfig } from '@shared/kernel/GameConfig';
+import { Logger } from '@shared/ports/Logger';
 import { Round } from '@engine/domain/Round';
-import { CrashPoint } from '@engine/domain/CrashPoint';
+import { CrashPoint } from '@shared/kernel/CrashPoint';
 import { Money } from '@shared/kernel/Money';
-import { Bet } from '@betting/domain/Bet';
+import { Bet } from '@engine/domain/Bet';
 
 describe('PlaceBetUseCase', () => {
   const config: GameConfig = {

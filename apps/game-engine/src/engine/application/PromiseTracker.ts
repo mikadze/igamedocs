@@ -1,4 +1,4 @@
-import { Logger } from '@engine/application/ports/Logger';
+import { Logger } from '@shared/ports/Logger';
 
 export class PromiseTracker {
   private readonly pending = new Set<Promise<unknown>>();

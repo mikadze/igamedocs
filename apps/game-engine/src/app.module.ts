@@ -1,12 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { GameConfigModule } from './config/config.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
-    }),
-  ],
+  imports: [GameConfigModule],
 })
 export class AppModule {}

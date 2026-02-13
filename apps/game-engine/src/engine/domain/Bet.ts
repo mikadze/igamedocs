@@ -1,4 +1,4 @@
-import { BetStatus } from '@betting/domain/BetStatus';
+import { BetStatus } from '@engine/domain/BetStatus';
 import { Money } from '@shared/kernel/Money';
 import { BetNotActiveError, InvalidStateTransition } from '@shared/kernel/DomainError';
 

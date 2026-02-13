@@ -1,6 +1,6 @@
-import { BetCollection } from '@betting/domain/BetCollection';
-import { Bet } from '@betting/domain/Bet';
-import { BetStatus } from '@betting/domain/BetStatus';
+import { BetCollection } from '@engine/domain/BetCollection';
+import { Bet } from '@engine/domain/Bet';
+import { BetStatus } from '@engine/domain/BetStatus';
 import { Money } from '@shared/kernel/Money';
 
 describe('BetCollection', () => {

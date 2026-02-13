@@ -1,16 +1,16 @@
 import { randomUUID } from 'crypto';
-import { GameConfig } from '@engine/domain/GameConfig';
+import { GameConfig } from '@shared/kernel/GameConfig';
 import { Money } from '@shared/kernel/Money';
-import { Bet } from '@betting/domain/Bet';
+import { Bet } from '@engine/domain/Bet';
 import { WalletGateway } from '@betting/application/ports/WalletGateway';
 import { BetStore } from '@betting/application/ports/BetStore';
 import { FailedCreditStore } from '@betting/application/ports/FailedCreditStore';
 import { PlaceBetCommand } from '@betting/application/commands/PlaceBetCommand';
 import { PlaceBetResult } from '@betting/application/commands/PlaceBetResult';
 import { FailedCredit } from '@betting/application/commands/FailedCredit';
-import { toBetSnapshot } from '@betting/application/mappers/toBetSnapshot';
+import { toBetSnapshot } from '@engine/application/mappers/toBetSnapshot';
 import { Round } from '@engine/domain/Round';
-import { Logger } from '@engine/application/ports/Logger';
+import { Logger } from '@shared/ports/Logger';
 
 export class PlaceBetUseCase {
   constructor(

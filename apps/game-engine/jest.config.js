@@ -14,5 +14,6 @@ module.exports = {
     '^@betting/(.*)$': '<rootDir>/src/betting/$1',
     '^@rng/(.*)$': '<rootDir>/src/rng/$1',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+    '^@config/(.*)$': '<rootDir>/src/config/$1',
   },
 };

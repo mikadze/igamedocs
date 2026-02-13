@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { Money } from '@shared/kernel/Money';
 import { WalletGateway } from '@betting/application/ports/WalletGateway';
 import { FailedCreditStore } from '@betting/application/ports/FailedCreditStore';
-import { EventPublisher } from '@engine/application/ports/EventPublisher';
+import { CreditFailedNotifier } from '@betting/application/ports/CreditFailedNotifier';
 import { CashoutCommand } from '@betting/application/commands/CashoutCommand';
 import { CashoutResult } from '@betting/application/commands/CashoutResult';
 import { FailedCredit } from '@betting/application/commands/FailedCredit';
@@ -13,7 +13,7 @@ export class CashoutUseCase {
   constructor(
     private readonly walletGateway: WalletGateway,
     private readonly failedCreditStore: FailedCreditStore,
-    private readonly eventPublisher: EventPublisher,
+    private readonly creditFailedNotifier: CreditFailedNotifier,
   ) {}
 
   execute(cmd: CashoutCommand, round: Round): CashoutResult {
@@ -72,7 +72,7 @@ export class CashoutUseCase {
     };
 
     this.failedCreditStore.save(failed);
-    this.eventPublisher.creditFailed(
+    this.creditFailedNotifier.creditFailed(
       playerId, betId, roundId, payout.toCents(), reason,
     ).catch(() => {});
   }

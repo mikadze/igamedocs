@@ -1,17 +1,17 @@
 import { CashoutUseCase } from '@betting/application/CashoutUseCase';
 import { WalletGateway, WalletResult } from '@betting/application/ports/WalletGateway';
 import { FailedCreditStore } from '@betting/application/ports/FailedCreditStore';
-import { EventPublisher } from '@engine/application/ports/EventPublisher';
+import { CreditFailedNotifier } from '@betting/application/ports/CreditFailedNotifier';
 import { Money } from '@shared/kernel/Money';
 import { Round } from '@engine/domain/Round';
-import { CrashPoint } from '@engine/domain/CrashPoint';
-import { Bet } from '@betting/domain/Bet';
-import { BetStatus } from '@betting/domain/BetStatus';
+import { CrashPoint } from '@shared/kernel/CrashPoint';
+import { Bet } from '@engine/domain/Bet';
+import { BetStatus } from '@engine/domain/BetStatus';
 
 describe('CashoutUseCase', () => {
   let walletGateway: WalletGateway;
   let failedCreditStore: FailedCreditStore;
-  let eventPublisher: EventPublisher;
+  let creditFailedNotifier: CreditFailedNotifier;
   let useCase: CashoutUseCase;
   let round: Round;
 
@@ -43,20 +43,10 @@ describe('CashoutUseCase', () => {
       getUnresolved: jest.fn(() => []),
       markResolved: jest.fn(),
     };
-    eventPublisher = {
-      roundNew: jest.fn(async () => {}),
-      roundBetting: jest.fn(async () => {}),
-      roundStarted: jest.fn(async () => {}),
-      roundCrashed: jest.fn(async () => {}),
-      tick: jest.fn(async () => {}),
-      betPlaced: jest.fn(async () => {}),
-      betWon: jest.fn(async () => {}),
-      betLost: jest.fn(async () => {}),
-      betRejected: jest.fn(async () => {}),
+    creditFailedNotifier = {
       creditFailed: jest.fn(async () => {}),
-      publishBatch: jest.fn(async () => {}),
     };
-    useCase = new CashoutUseCase(walletGateway, failedCreditStore, eventPublisher);
+    useCase = new CashoutUseCase(walletGateway, failedCreditStore, creditFailedNotifier);
 
     // Create a round in BETTING state with a high crash point
     round = new Round('round-1', CrashPoint.of(100.0), 'hashed-seed');
@@ -116,7 +106,7 @@ describe('CashoutUseCase', () => {
       await flushPromises();
 
       expect(failedCreditStore.save).not.toHaveBeenCalled();
-      expect(eventPublisher.creditFailed).not.toHaveBeenCalled();
+      expect(creditFailedNotifier.creditFailed).not.toHaveBeenCalled();
     });
   });
 
@@ -282,7 +272,7 @@ describe('CashoutUseCase', () => {
       useCase.execute({ playerId: 'player-1', roundId: 'round-1', betId: 'bet-1' }, round);
       await flushPromises();
 
-      expect(eventPublisher.creditFailed).toHaveBeenCalledWith(
+      expect(creditFailedNotifier.creditFailed).toHaveBeenCalledWith(
         'player-1', 'bet-1', 'round-1', 1500, 'PLAYER_BLOCKED',
       );
     });

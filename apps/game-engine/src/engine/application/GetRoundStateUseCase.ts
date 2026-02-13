@@ -1,6 +1,6 @@
 import { RoundState } from '@engine/domain/RoundState';
 import { BetSnapshot } from '@shared/kernel/BetSnapshot';
-import { toBetSnapshot } from '@betting/application/mappers/toBetSnapshot';
+import { toBetSnapshot } from '@engine/application/mappers/toBetSnapshot';
 import { CurrentRoundStore } from '@engine/application/ports/CurrentRoundStore';
 
 export interface RoundSnapshot {

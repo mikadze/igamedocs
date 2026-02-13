@@ -1,4 +1,4 @@
-import { Bet } from '@betting/domain/Bet';
+import { Bet } from '@engine/domain/Bet';
 
 export interface BetStore {
   add(bet: Bet): void;
