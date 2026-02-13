@@ -15,5 +15,6 @@ module.exports = {
     '^@rng/(.*)$': '<rootDir>/src/rng/$1',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
     '^@config/(.*)$': '<rootDir>/src/config/$1',
+    '^@messaging/(.*)$': '<rootDir>/src/messaging/$1',
   },
 };

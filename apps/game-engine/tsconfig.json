@@ -20,7 +20,8 @@
       "@betting/*": ["src/betting/*"],
       "@rng/*": ["src/rng/*"],
       "@shared/*": ["src/shared/*"],
-      "@config/*": ["src/config/*"]
+      "@config/*": ["src/config/*"],
+      "@messaging/*": ["src/messaging/*"]
     }
   },
   "include": ["src/**/*", "test/**/*"],
