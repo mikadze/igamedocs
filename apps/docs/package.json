@@ -1,0 +1,9 @@
+{
+  "name": "@igame/docs",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -l 3000",
+    "build": "echo 'Static site - no build required'"
+  }
+}
