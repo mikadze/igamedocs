@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "npx serve . -l 3000",
-    "build": "echo 'Static site - no build required'"
+    "build": "asyncapi generate fromTemplate ../game-engine/asyncapi.yaml @asyncapi/html-template -o api-docs -p singleFile=true --force-write"
+  },
+  "devDependencies": {
+    "@asyncapi/cli": "^2.14.0",
+    "@asyncapi/html-template": "^2.3.0"
   }
 }

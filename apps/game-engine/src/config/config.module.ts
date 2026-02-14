@@ -14,6 +14,6 @@ import {
     }),
   ],
   providers: [validatedEnvProvider, gameConfigProvider, natsTopicsProvider],
-  exports: [GAME_CONFIG, 'NATS_TOPICS'],
+  exports: ['VALIDATED_ENV', GAME_CONFIG, 'NATS_TOPICS'],
 })
 export class GameConfigModule {}

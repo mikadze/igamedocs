@@ -7,25 +7,7 @@ import { CashoutCommand } from '@betting/application/commands/CashoutCommand';
 import { Logger } from '@shared/ports/Logger';
 import { GameTopics } from './topics';
 import { NATS_CONNECTION, NATS_TOPICS, LOGGER } from './tokens';
-
-/**
- * Zod schemas for inbound NATS command payloads.
- * These form the anti-corruption layer: any malformed or
- * malicious JSON is rejected before reaching the game loop.
- */
-const placeBetSchema = z.object({
-  idempotencyKey: z.string().uuid(),
-  playerId: z.string().min(1),
-  roundId: z.string().min(1),
-  amountCents: z.number().int().positive(),
-  autoCashout: z.number().positive().optional(),
-});
-
-const cashoutSchema = z.object({
-  playerId: z.string().min(1),
-  roundId: z.string().min(1),
-  betId: z.string().min(1),
-});
+import { placeBetSchema, cashoutSchema } from './schemas';
 
 @Injectable()
 export class NatsEventSubscriber implements EventSubscriber {
