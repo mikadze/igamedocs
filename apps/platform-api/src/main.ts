@@ -8,11 +8,11 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(
+  const app = (await NestFactory.create(
     AppModule,
     new FastifyAdapter({ logger: false, trustProxy: true }),
     { bufferLogs: true },
-  );
+  )) as any as NestFastifyApplication;
 
   app.useLogger(app.get(Logger));
   app.enableCors();
@@ -45,8 +45,8 @@ async function bootstrap() {
     .setVersion('0.0.1')
     .addBearerAuth()
     .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
+  const document = SwaggerModule.createDocument(app as any, swaggerConfig);
+  SwaggerModule.setup('api/docs', app as any, document);
 
   const port = process.env.PORT ?? 4000;
   await app.listen(port, '0.0.0.0');
