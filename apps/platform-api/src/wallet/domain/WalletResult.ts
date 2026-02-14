@@ -1,13 +1,7 @@
 import { Money } from '@shared/kernel/Money';
 
-export type WalletErrorCode =
-  | 'INSUFFICIENT_FUNDS'
-  | 'PLAYER_BLOCKED'
-  | 'TOKEN_EXPIRED'
-  | 'DUPLICATE_TRANSACTION'
-  | 'LIMIT_REACHED'
-  | 'TIMEOUT'
-  | 'INVALID_SIGNATURE';
+export type { WalletErrorCode } from '@shared/types/WalletErrorCode';
+import type { WalletErrorCode } from '@shared/types/WalletErrorCode';
 
 export type WalletResult =
   | { success: true; balance: Money; operatorTxId?: string }
