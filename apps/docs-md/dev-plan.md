@@ -157,14 +157,39 @@ Hot path implementation: betting, multiplier, cashout
 
 ### 2.7 Auth & Wallet
 
+**Two auth paths — B2B operator-mediated (primary) and direct player login (secondary).**
+
+#### 2.7a Operator Game Launch Auth (Primary — B2B)
+
+The standard iGaming game launch flow: operator sends opaque session token → Platform API resolves → issues internal JWT.
+
 | Engineer 1 (Frontend) | Engineer 2 (Game Engine) | Engineer 3 (Platform) |
 |------------------------|--------------------------|------------------------|
-| Login/signup forms | Validate JWT on WS connect | POST /auth/login endpoint |
-| JWT token storage | Map session to player_id | POST /auth/register endpoint |
-| Wallet connect button | | JWT generation & refresh |
-| Deposit/withdraw modals | | Wallet SDK integration |
-| | | Deposit/withdraw endpoints |
+| Accept game launch URL with `?token=` param | Validate JWT on WS connect (asymmetric public key only) | **`POST /auth/launch` — resolve opaque session token** |
+| Exchange opaque token for JWT via Platform API | Map session to player_id | **`TokenExchangeService` — call operator's `/validate-token` endpoint** |
+| Store JWT, use for WS upgrade | Handle `re_auth` message (verify fresh JWT, update session) | **`OperatorKeyStore` — store operator RSA public keys + whitelisted IPs** |
+| Handle `re_auth_required` from server (fetch new JWT, send `re_auth`) | | **`OperatorAuthMiddleware` — verify RSA-SHA256 signed operator requests** |
+| | | **JWT signing with RS256/EdDSA private key (asymmetric)** |
+| | | Outbound wallet request signing (RSA — for `POST /wallet/debit`, `/credit`) |
+
+#### 2.7b Direct Player Auth (Secondary)
+
+For Aviatrix's own player base (not operator-mediated).
+
+| Engineer 1 (Frontend) | Engineer 2 (Game Engine) | Engineer 3 (Platform) |
+|------------------------|--------------------------|------------------------|
+| Login/signup forms | | POST /auth/login endpoint |
+| JWT token storage | | POST /auth/register endpoint |
+| | | JWT generation (same RS256/EdDSA key as 2.7a) |
+
+#### 2.7c Wallet Integration
+
+| Engineer 1 (Frontend) | Engineer 2 (Game Engine) | Engineer 3 (Platform) |
+|------------------------|--------------------------|------------------------|
+| Wallet connect button | | Wallet SDK integration |
+| Deposit/withdraw modals | | Deposit/withdraw endpoints |
 | | | Transaction webhook handlers |
+| | | RSA signature verification on inbound operator wallet callbacks |
 
 **Sync Point 2:** WebSocket message format finalization & end-to-end bet test -- Full bet -> fly -> cashout cycle works
 
