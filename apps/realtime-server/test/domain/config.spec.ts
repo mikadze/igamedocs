@@ -99,18 +99,16 @@ describe('loadConfig', () => {
     }
   });
 
-  it('returns config, raw, and topics when env is valid', () => {
+  it('returns config and raw when env is valid', () => {
     const originalEnv = { ...process.env };
     process.env.OPERATOR_ID = 'test-op';
     process.env.JWT_PUBLIC_KEY = TEST_PEM_KEY;
 
     try {
-      const { raw, config, topics } = loadConfig();
+      const { raw, config } = loadConfig();
       expect(raw.OPERATOR_ID).toBe('test-op');
       expect(config.operatorId).toBe('test-op');
       expect(config.wsPort).toBe(8080);
-      expect(topics.ROUND_NEW).toBe('game.test-op.round.new');
-      expect(topics.CMD_PLACE_BET).toBe('game.test-op.cmd.place-bet');
     } finally {
       Object.assign(process.env, originalEnv);
     }

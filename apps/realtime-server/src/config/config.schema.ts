@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { type RealtimeConfig } from './RealtimeConfig';
-import { type GameTopics, createTopics } from '@messaging/infrastructure/topics';
 
 export const realtimeConfigSchema = z.object({
   OPERATOR_ID: z
@@ -55,7 +54,6 @@ export type RawRealtimeConfig = z.infer<typeof realtimeConfigSchema>;
 export function loadConfig(): {
   raw: RawRealtimeConfig;
   config: RealtimeConfig;
-  topics: GameTopics;
 } {
   const result = realtimeConfigSchema.safeParse(process.env);
 
@@ -76,7 +74,5 @@ export function loadConfig(): {
     maxConnections: raw.MAX_CONNECTIONS,
   };
 
-  const topics = createTopics(raw.OPERATOR_ID);
-
-  return { raw, config, topics };
+  return { raw, config };
 }
