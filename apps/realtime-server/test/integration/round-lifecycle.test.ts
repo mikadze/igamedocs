@@ -66,7 +66,7 @@ describe('RT-5.2: Full Round Lifecycle E2E', () => {
 
     // 6. Game engine publishes bet.placed
     engine.publishBetPlaced({
-      betId: 'bet-e2e-1', playerId: 'e2e-player', roundId: 'e2e-round-1', amountCents: 500,
+      betId: 'bet-e2e-1', playerId: 'e2e-player', roundId: 'e2e-round-1', amountCents: 500, status: 'ACTIVE',
     });
     const betPlaced = await client.waitForMessage('bet_placed', 3000);
     expect(betPlaced.betId).toBe('bet-e2e-1');
@@ -101,7 +101,7 @@ describe('RT-5.2: Full Round Lifecycle E2E', () => {
     // 11. Game engine publishes bet.won
     engine.publishBetWon({
       betId: 'bet-e2e-1', playerId: 'e2e-player', roundId: 'e2e-round-1',
-      amountCents: 500, cashoutMultiplier: 1.5, payoutCents: 750,
+      amountCents: 500, status: 'WON', cashoutMultiplier: 1.5, payoutCents: 750,
     });
     const betWon = await client.waitForMessage('bet_won', 3000);
     expect(betWon.cashoutMultiplier).toBe(1.5);
@@ -194,7 +194,7 @@ describe('RT-5.2: Full Round Lifecycle E2E', () => {
 
     engine.publishBetLost({
       betId: 'bet-lost-1', playerId: 'lost-p1', roundId: 'lost-round',
-      amountCents: 300, crashPoint: 1.2,
+      amountCents: 300, status: 'LOST', crashPoint: 1.2,
     });
 
     const lost1 = await client1.waitForMessage('bet_lost', 3000);

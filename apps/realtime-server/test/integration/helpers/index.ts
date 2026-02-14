@@ -182,7 +182,7 @@ export async function createTestServer(opts?: {
   });
 
   const bunServer = wsServer.start();
-  const port = bunServer.port;
+  const port = bunServer.port!;
 
   return {
     server: bunServer,
@@ -265,23 +265,26 @@ export function connectClient(url: string, token: string): Promise<TestWsClient>
     const messages: ServerMessage[] = [];
     const waiters: Array<{ type: string; resolve: (msg: any) => void; timer: ReturnType<typeof setTimeout> }> = [];
     let closeWaiters: Array<{ resolve: (ev: { code: number; reason: string }) => void; timer: ReturnType<typeof setTimeout> }> = [];
+    let closeEvent: { code: number; reason: string } | null = null;
 
     ws.onmessage = (event) => {
       const msg = decodeServerMessage(event.data as ArrayBuffer);
-      messages.push(msg);
 
       const idx = waiters.findIndex((w) => w.type === msg.type);
       if (idx !== -1) {
         const waiter = waiters.splice(idx, 1)[0];
         clearTimeout(waiter.timer);
         waiter.resolve(msg);
+      } else {
+        messages.push(msg);
       }
     };
 
     ws.onclose = (event) => {
+      closeEvent = { code: event.code, reason: event.reason };
       for (const w of closeWaiters) {
         clearTimeout(w.timer);
-        w.resolve({ code: event.code, reason: event.reason });
+        w.resolve(closeEvent);
       }
       closeWaiters = [];
     };
@@ -306,8 +309,8 @@ export function connectClient(url: string, token: string): Promise<TestWsClient>
           });
         },
         waitForClose(timeoutMs = 3000) {
-          if (ws.readyState === WebSocket.CLOSED) {
-            return Promise.resolve({ code: 0, reason: '' });
+          if (closeEvent) {
+            return Promise.resolve(closeEvent);
           }
           return new Promise((res, rej) => {
             const timer = setTimeout(() => {
@@ -414,9 +417,9 @@ export interface GameEngineSimulator {
   publishRoundStarted(data: { roundId: string }): void;
   publishRoundCrashed(data: { roundId: string; crashPoint: number; serverSeed: string }): void;
   publishTick(data: { roundId: string; multiplier: number; elapsedMs: number }): void;
-  publishBetPlaced(data: { betId: string; playerId: string; roundId: string; amountCents: number }): void;
-  publishBetWon(data: { betId: string; playerId: string; roundId: string; amountCents: number; cashoutMultiplier: number; payoutCents: number }): void;
-  publishBetLost(data: { betId: string; playerId: string; roundId: string; amountCents: number; crashPoint: number }): void;
+  publishBetPlaced(data: { betId: string; playerId: string; roundId: string; amountCents: number; status: string }): void;
+  publishBetWon(data: { betId: string; playerId: string; roundId: string; amountCents: number; status: string; cashoutMultiplier: number; payoutCents: number }): void;
+  publishBetLost(data: { betId: string; playerId: string; roundId: string; amountCents: number; status: string; crashPoint: number }): void;
   publishBetRejected(data: { playerId: string; roundId: string; amountCents: number; error: string }): void;
   publishCreditFailed(data: { playerId: string; betId: string; roundId: string; payoutCents: number; reason: string }): void;
 }
