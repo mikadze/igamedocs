@@ -62,6 +62,7 @@ export class AuthService {
       depositUrl: dto.deposit_url,
       country: dto.country,
       language: dto.lang,
+      sessionId,
     });
     // Set both session keys atomically with same TTL
     const pipeline = this.redis.pipeline();
@@ -112,7 +113,7 @@ export class AuthService {
       operatorId: session.operatorId,
       operatorPlayerId: session.operatorPlayerId,
       currency: session.currency,
-      sessionId: randomUUID(),
+      sessionId: session.sessionId,
     };
 
     // Refresh session TTL on activity
@@ -135,7 +136,7 @@ export class AuthService {
     refreshToken: string,
   ): { accessToken: string } | null {
     try {
-      const payload = this.tokenService.verifyToken(refreshToken);
+      const payload = this.tokenService.verifyRefreshToken(refreshToken);
       const newAccess = this.tokenService.createAccessToken(payload);
       return { accessToken: newAccess };
     } catch {
@@ -183,6 +184,7 @@ export class AuthService {
           country: data.country,
           language: data.language,
           lastSeenAt: now,
+          updatedAt: now,
         },
       })
       .returning();

@@ -7,11 +7,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import Redis from 'ioredis';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../crypto/jwt-auth.guard';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import { PlayerService } from './player.service';
 
-@Controller('api/player')
+@Controller('player')
 @UseGuards(JwtAuthGuard)
 export class PlayerController {
   constructor(

@@ -48,7 +48,7 @@ export class SignatureGuard implements CanActivate {
     const clientIp =
       request.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
       request.ip;
-    const allowedIps = operator.allowedIps as string[];
+    const allowedIps = (operator.allowedIps as string[] | null) ?? [];
     if (allowedIps.length > 0 && !allowedIps.includes(clientIp)) {
       this.logger.warn(
         `IP ${clientIp} not in whitelist for operator ${operator.code}`,
@@ -57,10 +57,11 @@ export class SignatureGuard implements CanActivate {
     }
 
     // Signature verification
-    const signature =
-      request.headers['x-signature'] ||
-      request.headers['x-hub88-signature'] ||
+    const rawSignature =
+      request.headers['x-signature'] ??
+      request.headers['x-hub88-signature'] ??
       request.headers['x-aviatrix-signature'];
+    const signature = Array.isArray(rawSignature) ? rawSignature[0] : rawSignature;
 
     if (!signature) {
       throw new UnauthorizedException('Missing signature header');

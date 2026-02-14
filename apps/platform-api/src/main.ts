@@ -34,7 +34,9 @@ async function bootstrap() {
     },
   );
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['/game/url', '/game/round'],
+  });
   app.enableShutdownHooks();
 
   const swaggerConfig = new DocumentBuilder()

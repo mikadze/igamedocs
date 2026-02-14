@@ -1,7 +1,5 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
-import Redis from 'ioredis';
+import { Injectable, Logger } from '@nestjs/common';
 import { DbService } from '../db/db.service';
-import { REDIS_CLIENT } from '../redis/redis.module';
 import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
@@ -11,7 +9,6 @@ export class CashoutService {
   constructor(
     private readonly db: DbService,
     private readonly walletService: WalletService,
-    @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
   /**
@@ -29,9 +26,12 @@ export class CashoutService {
     currency: string;
     betTransactionUuid: string;
   }) {
-    const payout = (
-      Number(params.betAmount) * Number(params.cashoutMultiplier)
-    ).toFixed(4);
+    // Integer-scaled arithmetic to avoid floating-point errors.
+    // Scale to 4 decimal places (10000), multiply, then scale back.
+    const betCents = Math.round(Number(params.betAmount) * 10000);
+    const multiplierScaled = Math.round(Number(params.cashoutMultiplier) * 10000);
+    const payoutCents = Math.round((betCents * multiplierScaled) / 10000);
+    const payout = (payoutCents / 10000).toFixed(4);
 
     // Credit winnings to operator wallet
     const result = await this.walletService.creditWin({

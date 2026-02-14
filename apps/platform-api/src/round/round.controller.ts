@@ -6,10 +6,10 @@ import {
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../crypto/jwt-auth.guard';
 import { RoundService } from './round.service';
 
-@Controller('api/rounds')
+@Controller('rounds')
 @UseGuards(JwtAuthGuard)
 export class RoundController {
   constructor(private readonly roundService: RoundService) {}

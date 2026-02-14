@@ -48,7 +48,7 @@ export class WalletService {
         const parsed = JSON.parse(retried);
         return { ...parsed, cached: true };
       }
-      // Still no cache — fall through to API call
+      // Still no cache — fall through to API call (but don't hold lock)
     }
 
     try {
@@ -59,7 +59,9 @@ export class WalletService {
 
       return { ...result, cached: false };
     } finally {
-      await this.redis.del(lockKey);
+      if (acquired) {
+        await this.redis.del(lockKey);
+      }
     }
   }
 
@@ -198,6 +200,7 @@ export class WalletService {
     playerId: string;
     roundId: string;
     referenceTxUuid: string;
+    currency?: string;
   }): Promise<WalletResponse> {
     const requestUuid = randomUUID();
     const transactionUuid = randomUUID();
@@ -213,7 +216,7 @@ export class WalletService {
       refTxUuid: params.referenceTxUuid,
       roundId: params.roundId,
       amount: '0',
-      currency: '',
+      currency: params.currency ?? 'N/A',
       status: 'PENDING',
     });
 

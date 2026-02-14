@@ -8,6 +8,7 @@ export interface JwtPayload {
   operatorPlayerId: string;
   currency: string;
   sessionId: string;
+  type?: 'access' | 'refresh'; // token type claim
 }
 
 @Injectable()
@@ -55,14 +56,30 @@ export class TokenService {
   }
 
   createAccessToken(payload: JwtPayload): string {
-    return this.sign(payload as unknown as Record<string, unknown>);
+    return this.sign({ ...payload, type: 'access' } as unknown as Record<string, unknown>);
   }
 
   createRefreshToken(payload: JwtPayload): string {
-    return this.signRefresh(payload as unknown as Record<string, unknown>);
+    return this.signRefresh({ ...payload, type: 'refresh' } as unknown as Record<string, unknown>);
   }
 
   verifyToken(token: string): JwtPayload {
     return this.verify(token);
+  }
+
+  verifyAccessToken(token: string): JwtPayload {
+    const payload = this.verify(token);
+    if (payload.type !== 'access') {
+      throw new Error('Token is not an access token');
+    }
+    return payload;
+  }
+
+  verifyRefreshToken(token: string): JwtPayload {
+    const payload = this.verify(token);
+    if (payload.type !== 'refresh') {
+      throw new Error('Token is not a refresh token');
+    }
+    return payload;
   }
 }

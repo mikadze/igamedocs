@@ -5,7 +5,6 @@ import { DbService } from '../db/db.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import { rounds } from '../db/schema';
 
-const CURRENT_ROUND_TTL = 0; // no TTL — explicitly updated on state change
 const SETTLED_ROUND_TTL = 300; // 5 minutes
 
 @Injectable()

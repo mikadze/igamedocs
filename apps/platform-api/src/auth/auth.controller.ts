@@ -5,6 +5,7 @@ import {
   Body,
   Req,
   UseGuards,
+  UsePipes,
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
@@ -13,9 +14,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { HistoryService } from '../history/history.service';
 import { SignatureGuard } from './guards/signature.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../crypto/jwt-auth.guard';
 import { JwtPayload } from '../crypto/token.service';
-import { GameLaunchDto } from './dto/game-launch.dto';
+import { GameLaunchDto, GameLaunchSchema, GameRoundQueryDto, GameRoundQuerySchema } from './dto/game-launch.dto';
+import { TypeBoxValidationPipe } from '../common/pipes/typebox-validation.pipe';
 
 @ApiTags('auth')
 @Controller()
@@ -32,6 +34,7 @@ export class AuthController {
    */
   @Post('/game/url')
   @UseGuards(SignatureGuard)
+  @UsePipes(new TypeBoxValidationPipe(GameLaunchSchema))
   @ApiOperation({ summary: 'Launch game session (aggregator/operator call)' })
   async gameLaunch(
     @Body() body: GameLaunchDto,
@@ -103,8 +106,9 @@ export class AuthController {
    */
   @Post('/game/round')
   @UseGuards(SignatureGuard)
+  @UsePipes(new TypeBoxValidationPipe(GameRoundQuerySchema))
   @ApiOperation({ summary: 'Get round audit data (aggregator/operator call)' })
-  async gameRound(@Body() body: { round_id: string }) {
+  async gameRound(@Body() body: GameRoundQueryDto) {
     if (!body.round_id) {
       throw new BadRequestException('round_id is required');
     }

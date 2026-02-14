@@ -1,5 +1,5 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
-import { eq, and } from 'drizzle-orm';
+import { Injectable, Inject } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import Redis from 'ioredis';
 import { DbService } from '../db/db.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
@@ -9,8 +9,6 @@ const VERIFICATION_CACHE_TTL = 3600; // 1 hour — immutable after round complet
 
 @Injectable()
 export class VerificationService {
-  private readonly logger = new Logger(VerificationService.name);
-
   constructor(
     private readonly db: DbService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,

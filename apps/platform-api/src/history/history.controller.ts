@@ -5,10 +5,10 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../crypto/jwt-auth.guard';
 import { HistoryService } from './history.service';
 
-@Controller('api')
+@Controller()
 @UseGuards(JwtAuthGuard)
 export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}

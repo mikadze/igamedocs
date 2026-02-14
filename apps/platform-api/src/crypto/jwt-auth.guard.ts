@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TokenService, JwtPayload } from '../../crypto/token.service';
+import { TokenService, JwtPayload } from './token.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -21,7 +21,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = authHeader.slice(7);
 
     try {
-      const payload: JwtPayload = this.tokenService.verifyToken(token);
+      const payload: JwtPayload = this.tokenService.verifyAccessToken(token);
       request.user = payload;
       return true;
     } catch {

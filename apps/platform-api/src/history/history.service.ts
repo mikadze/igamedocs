@@ -1,4 +1,4 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { eq, and, lt, or, desc } from 'drizzle-orm';
 import Redis from 'ioredis';
 import { DbService } from '../db/db.service';
@@ -10,8 +10,6 @@ const RECENT_ROUNDS_CACHE_TTL = 60; // 1 minute
 
 @Injectable()
 export class HistoryService {
-  private readonly logger = new Logger(HistoryService.name);
-
   constructor(
     private readonly db: DbService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,

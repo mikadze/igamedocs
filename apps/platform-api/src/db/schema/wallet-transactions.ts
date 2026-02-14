@@ -54,6 +54,5 @@ export const walletTransactions = gameSchema.table(
   },
   (table) => [
     index('wallet_tx_player_round_idx').on(table.playerId, table.roundId),
-    index('wallet_tx_request_uuid_idx').on(table.requestUuid),
   ],
 );

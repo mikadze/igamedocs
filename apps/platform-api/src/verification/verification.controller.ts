@@ -5,10 +5,10 @@ import {
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../crypto/jwt-auth.guard';
 import { VerificationService } from './verification.service';
 
-@Controller('api/rounds')
+@Controller('rounds')
 @UseGuards(JwtAuthGuard)
 export class VerificationController {
   constructor(private readonly verificationService: VerificationService) {}
