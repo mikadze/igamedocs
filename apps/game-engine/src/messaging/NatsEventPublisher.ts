@@ -5,10 +5,7 @@ import { BetSnapshot } from '@shared/kernel/BetSnapshot';
 import { GameEvent } from '@engine/application/GameEvent';
 import { Logger } from '@shared/ports/Logger';
 import { GameTopics } from './topics';
-
-export const NATS_CONNECTION = 'NATS_CONNECTION';
-export const NATS_TOPICS = 'NATS_TOPICS';
-export const LOGGER = 'LOGGER';
+import { NATS_CONNECTION, NATS_TOPICS, LOGGER } from './tokens';
 
 @Injectable()
 export class NatsEventPublisher implements EventPublisher {

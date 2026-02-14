@@ -13,6 +13,7 @@ export class Bet {
     readonly roundId: string,
     readonly amount: Money,
     readonly autoCashout?: number,
+    readonly idempotencyKey?: string,
   ) {}
 
   get status(): BetStatus {

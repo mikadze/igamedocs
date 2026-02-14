@@ -17,6 +17,7 @@ import { Bet } from '@engine/domain/Bet';
 import { GameConfig } from '@shared/kernel/GameConfig';
 import { SeedChain } from '@rng/domain/SeedChain';
 import { ProvablyFair } from '@rng/domain/ProvablyFair';
+import { ServerSeedProvider } from '@engine/application/ports/ServerSeedProvider';
 import { Money } from '@shared/kernel/Money';
 import { RoundState } from '@engine/domain/RoundState';
 import { Logger } from '@shared/ports/Logger';
@@ -24,6 +25,11 @@ import { FailedCreditStore } from '@betting/application/ports/FailedCreditStore'
 import { FailedEventStore } from '@engine/application/ports/FailedEventStore';
 import { GameEvent } from '@engine/application/GameEvent';
 import { CrashPoint } from '@shared/kernel/CrashPoint';
+
+let idempotencyCounter = 0;
+function betCmd(overrides: Omit<PlaceBetCommand, 'idempotencyKey'>): PlaceBetCommand {
+  return { idempotencyKey: `idem-${++idempotencyCounter}`, ...overrides };
+}
 
 describe('RunGameLoopUseCase', () => {
   const config: GameConfig = {
@@ -34,7 +40,7 @@ describe('RunGameLoopUseCase', () => {
     tickIntervalMs: 50,
   };
 
-  let seedChain: SeedChain;
+  let serverSeedProvider: ServerSeedProvider;
   let eventPublisher: EventPublisher;
   let eventSubscriber: EventSubscriber;
   let tickScheduler: TickScheduler;
@@ -79,7 +85,8 @@ describe('RunGameLoopUseCase', () => {
     jest.spyOn(ProvablyFair, 'calculateCrashPoint').mockReturnValue(CrashPoint.of(100));
 
     const terminalSeed = ProvablyFair.generateServerSeed();
-    seedChain = new SeedChain(terminalSeed, 100);
+    const seedChain = new SeedChain(terminalSeed, 100);
+    serverSeedProvider = { next: () => seedChain.next() };
 
     placeBetHandler = null;
     cashoutHandler = null;
@@ -136,8 +143,14 @@ describe('RunGameLoopUseCase', () => {
     betStore = {
       add: jest.fn((bet: Bet) => storedBets.set(bet.id, bet)),
       getById: jest.fn((id: string) => storedBets.get(id)),
+      findByIdempotencyKey: jest.fn(() => undefined),
       getByRound: jest.fn(() => Array.from(storedBets.values())),
       getActiveByRound: jest.fn(() => []),
+      clearRound: jest.fn((roundId: string) => {
+        for (const [id, bet] of storedBets.entries()) {
+          if (bet.roundId === roundId) storedBets.delete(id);
+        }
+      }),
     };
 
     walletGateway = {
@@ -168,7 +181,7 @@ describe('RunGameLoopUseCase', () => {
 
     useCase = new RunGameLoopUseCase(
       config,
-      seedChain,
+      serverSeedProvider,
       eventPublisher,
       eventSubscriber,
       tickScheduler,
@@ -179,6 +192,7 @@ describe('RunGameLoopUseCase', () => {
       clientSeedProvider,
       logger,
       failedEventStore,
+      betStore,
     );
   });
 
@@ -274,11 +288,11 @@ describe('RunGameLoopUseCase', () => {
       await useCase.start();
 
       // Simulate placing a bet via EventSubscriber
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       // Fire betting window timer
       timerCallback!();
@@ -297,11 +311,11 @@ describe('RunGameLoopUseCase', () => {
       await useCase.start();
 
       // Place a bet below minimum (config.minBetCents = 100)
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 10,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -342,11 +356,11 @@ describe('RunGameLoopUseCase', () => {
       await useCase.start();
 
       // Place a bet during betting phase
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -378,12 +392,12 @@ describe('RunGameLoopUseCase', () => {
       await useCase.start();
 
       // Place a bet with auto-cashout at 1.05
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
         autoCashout: 1.05,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -401,24 +415,24 @@ describe('RunGameLoopUseCase', () => {
     it('processes multiple auto-cashouts in the same tick', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
         autoCashout: 1.01,
-      });
-      placeBetHandler!({
+      }));
+      placeBetHandler!(betCmd({
         playerId: 'player-2',
         roundId: 'any',
         amountCents: 2000,
         autoCashout: 1.02,
-      });
-      placeBetHandler!({
+      }));
+      placeBetHandler!(betCmd({
         playerId: 'player-3',
         roundId: 'any',
         amountCents: 3000,
         autoCashout: 1.03,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -444,12 +458,12 @@ describe('RunGameLoopUseCase', () => {
     it('auto-cashout in same tick as crash results in WIN, not LOSS', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
         autoCashout: 1.05,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -486,11 +500,11 @@ describe('RunGameLoopUseCase', () => {
       await useCase.start();
 
       // Place a bet
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -546,11 +560,11 @@ describe('RunGameLoopUseCase', () => {
     it('silently ignores cashout for wrong player', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -571,11 +585,11 @@ describe('RunGameLoopUseCase', () => {
     it('silently drops cashout with wrong roundId', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -598,11 +612,11 @@ describe('RunGameLoopUseCase', () => {
     it('ignores cashout queued after crash completes', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       // End betting → RUNNING
       timerCallback!();
@@ -643,11 +657,11 @@ describe('RunGameLoopUseCase', () => {
     it('game loop continues normally after stale cashout is dropped', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -683,11 +697,11 @@ describe('RunGameLoopUseCase', () => {
     it('emits betWon even when wallet credit rejects', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -732,11 +746,11 @@ describe('RunGameLoopUseCase', () => {
     it('continues game loop when wallet credit fails', async () => {
       await useCase.start();
 
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-1',
         roundId: 'any',
         amountCents: 1000,
-      });
+      }));
 
       timerCallback!();
       await flushPromises();
@@ -822,11 +836,11 @@ describe('RunGameLoopUseCase', () => {
       await flushPromises();
 
       // Attempt to place a bet after betting has closed
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-late',
         roundId: 'old-round',
         amountCents: 500,
-      });
+      }));
       await flushPromises();
 
       expect(eventPublisher.betRejected).toHaveBeenCalledWith(
@@ -847,11 +861,11 @@ describe('RunGameLoopUseCase', () => {
       await flushPromises();
 
       // Place a bet during RUNNING (rejected by guard)
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-stale',
         roundId: 'stale-round',
         amountCents: 1000,
-      });
+      }));
       await flushPromises();
 
       // Trigger crash
@@ -890,11 +904,11 @@ describe('RunGameLoopUseCase', () => {
       (eventPublisher.betRejected as jest.Mock).mockClear();
 
       // Attempt to place a bet after crash
-      placeBetHandler!({
+      placeBetHandler!(betCmd({
         playerId: 'player-post-crash',
         roundId: 'crashed-round',
         amountCents: 500,
-      });
+      }));
       await flushPromises();
 
       expect(eventPublisher.betRejected).toHaveBeenCalledWith(
@@ -914,11 +928,11 @@ describe('RunGameLoopUseCase', () => {
 
       // Send 5 late bets during RUNNING — all rejected by the guard
       for (let i = 0; i < 5; i++) {
-        placeBetHandler!({
+        placeBetHandler!(betCmd({
           playerId: `player-late-${i}`,
           roundId: 'old-round',
           amountCents: 1000,
-        });
+        }));
       }
       await flushPromises();
 
@@ -946,11 +960,14 @@ describe('RunGameLoopUseCase', () => {
     });
   });
 
-  describe('promise tracking and backpressure', () => {
-    it('warns when event promises exceed high water mark', async () => {
-      const trackedUseCase = new RunGameLoopUseCase(
+  describe('bounded command queues', () => {
+    function createBoundedUseCase(
+      maxPlaceBetQueueSize?: number,
+      maxCashoutQueueSize?: number,
+    ): RunGameLoopUseCase {
+      return new RunGameLoopUseCase(
         config,
-        seedChain,
+        serverSeedProvider,
         eventPublisher,
         eventSubscriber,
         tickScheduler,
@@ -961,6 +978,130 @@ describe('RunGameLoopUseCase', () => {
         clientSeedProvider,
         logger,
         failedEventStore,
+        betStore,
+        undefined,
+        maxPlaceBetQueueSize,
+        maxCashoutQueueSize,
+      );
+    }
+
+    it('rejects bets with QUEUE_FULL when placeBet queue is at capacity', async () => {
+      const bounded = createBoundedUseCase(2);
+      await bounded.start();
+
+      placeBetHandler!(betCmd({ playerId: 'p1', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p2', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p3', roundId: 'any', amountCents: 1000 }));
+
+      expect(eventPublisher.betRejected).toHaveBeenCalledWith(
+        'p3', 'any', 1000, 'QUEUE_FULL',
+      );
+
+      timerCallback!();
+      await flushPromises();
+
+      expect(eventPublisher.betPlaced).toHaveBeenCalledTimes(2);
+      bounded.stop();
+    });
+
+    it('silently drops cashouts when cashout queue is at capacity', async () => {
+      const bounded = createBoundedUseCase(undefined, 2);
+      await bounded.start();
+
+      placeBetHandler!(betCmd({ playerId: 'p1', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p2', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p3', roundId: 'any', amountCents: 1000 }));
+
+      timerCallback!();
+      await flushPromises();
+
+      const roundId = (eventPublisher.roundNew as jest.Mock).mock.calls[0][0];
+      const betIds = Array.from(storedBets.keys());
+
+      cashoutHandler!({ playerId: 'p1', roundId, betId: betIds[0] });
+      cashoutHandler!({ playerId: 'p2', roundId, betId: betIds[1] });
+      cashoutHandler!({ playerId: 'p3', roundId, betId: betIds[2] });
+
+      tickCallback!(500);
+      flushTickEvents();
+      await flushPromises();
+
+      expect(walletGateway.credit).toHaveBeenCalledTimes(2);
+      bounded.stop();
+    });
+
+    it('restores placeBet queue capacity after draining in endBettingPhase', async () => {
+      const bounded = createBoundedUseCase(2);
+      await bounded.start();
+
+      placeBetHandler!(betCmd({ playerId: 'p1', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p2', roundId: 'any', amountCents: 1000 }));
+
+      timerCallback!();
+      await flushPromises();
+
+      tickCallback!(200000);
+      await flushPromises();
+
+      timerCallback!();
+      await flushPromises();
+
+      (eventPublisher.betPlaced as jest.Mock).mockClear();
+
+      placeBetHandler!(betCmd({ playerId: 'p3', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p4', roundId: 'any', amountCents: 1000 }));
+
+      timerCallback!();
+      await flushPromises();
+
+      expect(eventPublisher.betPlaced).toHaveBeenCalledTimes(2);
+      bounded.stop();
+    });
+
+    it('restores cashout queue capacity after each tick drain', async () => {
+      const bounded = createBoundedUseCase(undefined, 1);
+      await bounded.start();
+
+      placeBetHandler!(betCmd({ playerId: 'p1', roundId: 'any', amountCents: 1000 }));
+      placeBetHandler!(betCmd({ playerId: 'p2', roundId: 'any', amountCents: 1000 }));
+
+      timerCallback!();
+      await flushPromises();
+
+      const roundId = (eventPublisher.roundNew as jest.Mock).mock.calls[0][0];
+      const betIds = Array.from(storedBets.keys());
+
+      cashoutHandler!({ playerId: 'p1', roundId, betId: betIds[0] });
+      tickCallback!(500);
+      flushTickEvents();
+      await flushPromises();
+
+      cashoutHandler!({ playerId: 'p2', roundId, betId: betIds[1] });
+      tickCallback!(600);
+      flushTickEvents();
+      await flushPromises();
+
+      expect(walletGateway.credit).toHaveBeenCalledTimes(2);
+      bounded.stop();
+    });
+  });
+
+  describe('promise tracking and backpressure', () => {
+    it('warns when event promises exceed high water mark', async () => {
+      const trackedUseCase = new RunGameLoopUseCase(
+        config,
+        serverSeedProvider,
+        eventPublisher,
+        eventSubscriber,
+        tickScheduler,
+        timer,
+        placeBetUseCase,
+        cashoutUseCase,
+        currentRoundStore,
+        clientSeedProvider,
+        logger,
+        failedEventStore,
+        betStore,
         2, // eventPromiseHighWaterMark
       );
 

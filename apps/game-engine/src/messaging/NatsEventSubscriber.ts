@@ -6,7 +6,7 @@ import { PlaceBetCommand } from '@betting/application/commands/PlaceBetCommand';
 import { CashoutCommand } from '@betting/application/commands/CashoutCommand';
 import { Logger } from '@shared/ports/Logger';
 import { GameTopics } from './topics';
-import { NATS_CONNECTION, NATS_TOPICS, LOGGER } from './NatsEventPublisher';
+import { NATS_CONNECTION, NATS_TOPICS, LOGGER } from './tokens';
 
 /**
  * Zod schemas for inbound NATS command payloads.
@@ -14,6 +14,7 @@ import { NATS_CONNECTION, NATS_TOPICS, LOGGER } from './NatsEventPublisher';
  * malicious JSON is rejected before reaching the game loop.
  */
 const placeBetSchema = z.object({
+  idempotencyKey: z.string().uuid(),
   playerId: z.string().min(1),
   roundId: z.string().min(1),
   amountCents: z.number().int().positive(),

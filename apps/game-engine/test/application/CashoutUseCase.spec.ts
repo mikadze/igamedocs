@@ -64,7 +64,19 @@ describe('CashoutUseCase', () => {
         round,
       );
 
-      expect(result).toEqual({ success: true, payoutCents: 1500 });
+      expect(result).toEqual({
+        success: true,
+        payoutCents: 1500,
+        snapshot: expect.objectContaining({
+          betId: 'bet-1',
+          playerId: 'player-1',
+          roundId: 'round-1',
+          amountCents: 1000,
+          status: BetStatus.WON,
+          cashoutMultiplier: 1.5,
+          payoutCents: 1500,
+        }),
+      });
       expect(walletGateway.credit).toHaveBeenCalledWith(
         'player-1',
         Money.fromCents(1500),
@@ -94,7 +106,19 @@ describe('CashoutUseCase', () => {
         round,
       );
 
-      expect(result).toEqual({ success: true, payoutCents: 499 });
+      expect(result).toEqual({
+        success: true,
+        payoutCents: 499,
+        snapshot: expect.objectContaining({
+          betId: 'bet-1',
+          playerId: 'player-1',
+          roundId: 'round-1',
+          amountCents: 333,
+          status: BetStatus.WON,
+          cashoutMultiplier: 1.5,
+          payoutCents: 499,
+        }),
+      });
     });
 
     it('does not persist failure or emit creditFailed on success', async () => {
@@ -207,7 +231,18 @@ describe('CashoutUseCase', () => {
       );
 
       // Domain cashout succeeded, wallet failure is handled asynchronously
-      expect(result).toEqual({ success: true, payoutCents: 1500 });
+      expect(result).toEqual({
+        success: true,
+        payoutCents: 1500,
+        snapshot: expect.objectContaining({
+          betId: 'bet-1',
+          playerId: 'player-1',
+          roundId: 'round-1',
+          amountCents: 1000,
+          status: BetStatus.WON,
+          payoutCents: 1500,
+        }),
+      });
     });
 
     it('persists failed credit when wallet credit rejects', async () => {

@@ -22,6 +22,8 @@ export const validatedEnvProvider: Provider<RawGameConfig> = {
       BETTING_WINDOW_MS: process.env.BETTING_WINDOW_MS,
       TICK_INTERVAL_MS: process.env.TICK_INTERVAL_MS,
       GROWTH_RATE: process.env.GROWTH_RATE,
+      MAX_PLACE_BET_QUEUE: process.env.MAX_PLACE_BET_QUEUE,
+      MAX_CASHOUT_QUEUE: process.env.MAX_CASHOUT_QUEUE,
     });
 
     if (!result.success) {

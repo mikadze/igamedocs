@@ -19,9 +19,10 @@ import { ProvablyFair } from '@rng/domain/ProvablyFair';
 import { ClientSeedProvider } from '@engine/application/ports/ClientSeedProvider';
 import { Logger } from '@shared/ports/Logger';
 import { PromiseTracker } from '@engine/application/PromiseTracker';
-import { SeedChain } from '@rng/domain/SeedChain';
+import { ServerSeedProvider } from '@engine/application/ports/ServerSeedProvider';
 import { TickEventBuffer } from '@engine/application/TickEventBuffer';
 import { FailedEventStore } from '@engine/application/ports/FailedEventStore';
+import { BetStore } from '@betting/application/ports/BetStore';
 
 export class RunGameLoopUseCase {
   private serverSeed: string = '';
@@ -33,10 +34,11 @@ export class RunGameLoopUseCase {
   private readonly eventTracker: PromiseTracker;
   private readonly tickEvents = new TickEventBuffer();
   private flushScheduled = false;
+  private previousRoundId: string | null = null;
 
   constructor(
     private readonly config: GameConfig,
-    private readonly seedChain: SeedChain,
+    private readonly serverSeedProvider: ServerSeedProvider,
     private readonly eventPublisher: EventPublisher,
     private readonly eventSubscriber: EventSubscriber,
     private readonly tickScheduler: TickScheduler,
@@ -47,7 +49,10 @@ export class RunGameLoopUseCase {
     private readonly clientSeedProvider: ClientSeedProvider,
     private readonly logger: Logger,
     private readonly failedEventStore: FailedEventStore,
+    private readonly betStore: BetStore,
     eventPromiseHighWaterMark: number = 100,
+    private readonly maxPlaceBetQueueSize: number = 500,
+    private readonly maxCashoutQueueSize: number = 1000,
   ) {
     this.eventTracker = new PromiseTracker(
       'events',
@@ -70,6 +75,15 @@ export class RunGameLoopUseCase {
         ));
         return;
       }
+      if (this.placeBetQueue.length >= this.maxPlaceBetQueueSize) {
+        this.trackEvent(this.eventPublisher.betRejected(
+          cmd.playerId,
+          cmd.roundId,
+          cmd.amountCents,
+          'QUEUE_FULL',
+        ));
+        return;
+      }
       this.placeBetQueue.push(cmd);
     });
 
@@ -77,6 +91,7 @@ export class RunGameLoopUseCase {
       const round = this.currentRoundStore.get();
       if (!round || round.state !== RoundState.RUNNING) return;
       if (cmd.roundId !== round.id) return;
+      if (this.cashoutQueue.length >= this.maxCashoutQueueSize) return;
       this.cashoutQueue.push(cmd);
     });
 
@@ -93,6 +108,15 @@ export class RunGameLoopUseCase {
       this.logger.warn('Stopping game loop with pending event promises', {
         pendingEvents: this.eventTracker.size,
       });
+    }
+
+    const currentRound = this.currentRoundStore.get();
+    if (currentRound) {
+      this.betStore.clearRound(currentRound.id);
+    }
+    if (this.previousRoundId) {
+      this.betStore.clearRound(this.previousRoundId);
+      this.previousRoundId = null;
     }
 
     this.currentRoundStore.set(null);
@@ -132,6 +156,12 @@ export class RunGameLoopUseCase {
   private async startNewRound(): Promise<void> {
     if (!this.running) return;
 
+    // Clear bets from the previous round (memory cleanup)
+    if (this.previousRoundId) {
+      this.betStore.clearRound(this.previousRoundId);
+      this.previousRoundId = null;
+    }
+
     // Reject any stale bets left from the previous round
     const staleBets = this.placeBetQueue.splice(0);
     for (const cmd of staleBets) {
@@ -143,7 +173,7 @@ export class RunGameLoopUseCase {
       ));
     }
 
-    this.serverSeed = this.seedChain.next();
+    this.serverSeed = this.serverSeedProvider.next();
     const hashedSeed = ProvablyFair.hashServerSeed(this.serverSeed);
     const clientSeed = this.clientSeedProvider.next();
     const crashPoint = ProvablyFair.calculateCrashPoint(
@@ -203,8 +233,7 @@ export class RunGameLoopUseCase {
       const cmd = this.cashoutQueue[i];
       const result = this.cashoutUseCase.execute(cmd, round);
       if (result.success) {
-        const bet = round.bets.getById(cmd.betId);
-        if (bet) this.wonSnapshots.push(toBetSnapshot(bet));
+        this.wonSnapshots.push(result.snapshot);
       }
     }
     this.cashoutQueue.length = 0;
@@ -218,8 +247,9 @@ export class RunGameLoopUseCase {
         { playerId: bet.playerId, roundId: round.id, betId: bet.id },
         round,
       );
+
       if (result.success) {
-        this.wonSnapshots.push(toBetSnapshot(bet));
+        this.wonSnapshots.push(result.snapshot);
       }
     });
 
@@ -247,6 +277,7 @@ export class RunGameLoopUseCase {
       });
       this.tickScheduler.stop();
       this.flushEvents();
+      this.previousRoundId = round.id;
       this.scheduleNextRound();
     } else {
       this.tickEvents.push({

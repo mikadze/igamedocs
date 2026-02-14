@@ -6,6 +6,7 @@ import { CreditFailedNotifier } from '@betting/application/ports/CreditFailedNot
 import { CashoutCommand } from '@betting/application/commands/CashoutCommand';
 import { CashoutResult } from '@betting/application/commands/CashoutResult';
 import { FailedCredit } from '@betting/application/commands/FailedCredit';
+import { toBetSnapshot } from '@engine/application/mappers/toBetSnapshot';
 import { Round } from '@engine/domain/Round';
 import { RoundState } from '@engine/domain/RoundState';
 
@@ -36,6 +37,7 @@ export class CashoutUseCase {
 
     try {
       const payout = round.cashout(cmd.betId);
+      const snapshot = toBetSnapshot(bet);
       this.walletGateway.credit(
         cmd.playerId, payout, round.id, cmd.betId,
       ).then((walletResult) => {
@@ -46,7 +48,7 @@ export class CashoutUseCase {
         const reason = err instanceof Error ? err.message : 'UNKNOWN';
         this.persistFailure(cmd.playerId, round.id, cmd.betId, payout, reason);
       });
-      return { success: true, payoutCents: payout.toCents() };
+      return { success: true, payoutCents: payout.toCents(), snapshot };
     } catch {
       return { success: false, error: 'BET_NOT_ACTIVE' };
     }

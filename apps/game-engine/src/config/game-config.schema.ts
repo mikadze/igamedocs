@@ -25,6 +25,10 @@ export const gameConfigSchema = z
     TICK_INTERVAL_MS: z.coerce.number().int().positive('TICK_INTERVAL_MS must be > 0'),
 
     GROWTH_RATE: z.coerce.number().positive().optional(),
+
+    MAX_PLACE_BET_QUEUE: z.coerce.number().int().positive().optional(),
+
+    MAX_CASHOUT_QUEUE: z.coerce.number().int().positive().optional(),
   })
   .refine((data) => data.MIN_BET_CENTS < data.MAX_BET_CENTS, {
     message: 'MIN_BET_CENTS must be less than MAX_BET_CENTS',

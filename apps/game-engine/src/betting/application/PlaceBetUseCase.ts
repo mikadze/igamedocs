@@ -29,6 +29,11 @@ export class PlaceBetUseCase {
       return { success: false, error: 'ABOVE_MAX_BET' };
     }
 
+    const existing = this.betStore.findByIdempotencyKey(command.idempotencyKey);
+    if (existing) {
+      return { success: true, snapshot: toBetSnapshot(existing) };
+    }
+
     const amount = Money.fromCents(command.amountCents);
     const betId = randomUUID();
 
@@ -54,6 +59,7 @@ export class PlaceBetUseCase {
       command.roundId,
       amount,
       command.autoCashout,
+      command.idempotencyKey,
     );
 
     try {

@@ -1,5 +1,7 @@
+import { BetSnapshot } from '@shared/kernel/BetSnapshot';
+
 export type CashoutResult =
-  | { success: true; payoutCents: number }
+  | { success: true; payoutCents: number; snapshot: BetSnapshot }
   | {
       success: false;
       error:

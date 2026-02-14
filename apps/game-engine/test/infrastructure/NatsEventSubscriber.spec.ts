@@ -3,6 +3,8 @@ import { NatsEventSubscriber } from '@messaging/NatsEventSubscriber';
 import { createTopics, GameTopics } from '@messaging/topics';
 import { Logger } from '@shared/ports/Logger';
 
+const VALID_UUID = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+
 describe('NatsEventSubscriber', () => {
   let subscriber: NatsEventSubscriber;
   let mockNats: { subscribe: jest.Mock };
@@ -43,6 +45,7 @@ describe('NatsEventSubscriber', () => {
       subscriber.onPlaceBet(handler);
 
       const cmd = {
+        idempotencyKey: VALID_UUID,
         playerId: 'p-1',
         roundId: 'r-1',
         amountCents: 500,
@@ -57,7 +60,7 @@ describe('NatsEventSubscriber', () => {
       const handler = jest.fn();
       subscriber.onPlaceBet(handler);
 
-      const cmd = { playerId: 'p-1', roundId: 'r-1', amountCents: 500 };
+      const cmd = { idempotencyKey: VALID_UUID, playerId: 'p-1', roundId: 'r-1', amountCents: 500 };
       capturedCallback!(null, { json: () => cmd });
 
       expect(handler).toHaveBeenCalledWith(cmd);
@@ -93,7 +96,7 @@ describe('NatsEventSubscriber', () => {
       subscriber.onPlaceBet(handler);
 
       capturedCallback!(null, {
-        json: () => ({ playerId: 'p-1', roundId: 'r-1', amountCents: -100 }),
+        json: () => ({ idempotencyKey: VALID_UUID, playerId: 'p-1', roundId: 'r-1', amountCents: -100 }),
       });
 
       expect(handler).not.toHaveBeenCalled();
@@ -108,7 +111,7 @@ describe('NatsEventSubscriber', () => {
       subscriber.onPlaceBet(handler);
 
       capturedCallback!(null, {
-        json: () => ({ playerId: 'p-1', roundId: 'r-1', amountCents: 10.5 }),
+        json: () => ({ idempotencyKey: VALID_UUID, playerId: 'p-1', roundId: 'r-1', amountCents: 10.5 }),
       });
 
       expect(handler).not.toHaveBeenCalled();
@@ -119,7 +122,7 @@ describe('NatsEventSubscriber', () => {
       subscriber.onPlaceBet(handler);
 
       capturedCallback!(null, {
-        json: () => ({ roundId: 'r-1', amountCents: 100 }),
+        json: () => ({ idempotencyKey: VALID_UUID, roundId: 'r-1', amountCents: 100 }),
       });
 
       expect(handler).not.toHaveBeenCalled();
@@ -130,7 +133,7 @@ describe('NatsEventSubscriber', () => {
       subscriber.onPlaceBet(handler);
 
       capturedCallback!(null, {
-        json: () => ({ playerId: 123, roundId: 'r-1', amountCents: 100 }),
+        json: () => ({ idempotencyKey: VALID_UUID, playerId: 123, roundId: 'r-1', amountCents: 100 }),
       });
 
       expect(handler).not.toHaveBeenCalled();
@@ -153,6 +156,7 @@ describe('NatsEventSubscriber', () => {
 
       capturedCallback!(null, {
         json: () => ({
+          idempotencyKey: VALID_UUID,
           playerId: 'p-1',
           roundId: 'r-1',
           amountCents: 500,
@@ -236,7 +240,7 @@ describe('NatsEventSubscriber', () => {
       });
 
       // Good message
-      const cmd = { playerId: 'p-1', roundId: 'r-1', amountCents: 100 };
+      const cmd = { idempotencyKey: VALID_UUID, playerId: 'p-1', roundId: 'r-1', amountCents: 100 };
       capturedCallback!(null, { json: () => cmd });
 
       expect(handler).toHaveBeenCalledTimes(1);

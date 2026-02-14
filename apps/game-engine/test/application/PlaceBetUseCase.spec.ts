@@ -41,8 +41,10 @@ describe('PlaceBetUseCase', () => {
     betStore = {
       add: jest.fn(),
       getById: jest.fn(),
+      findByIdempotencyKey: jest.fn(),
       getByRound: jest.fn(() => []),
       getActiveByRound: jest.fn(() => []),
+      clearRound: jest.fn(),
     };
     failedCreditStore = {
       save: jest.fn(),
@@ -57,6 +59,7 @@ describe('PlaceBetUseCase', () => {
   });
 
   const makeCommand = (overrides?: Partial<PlaceBetCommand>): PlaceBetCommand => ({
+    idempotencyKey: 'idem-1',
     playerId: 'player-1',
     roundId: 'round-1',
     amountCents: 1000,
@@ -164,6 +167,20 @@ describe('PlaceBetUseCase', () => {
   it('accepts bet at exact maximum', async () => {
     const result = await useCase.execute(makeCommand({ amountCents: 1000000 }), round);
     expect(result.success).toBe(true);
+  });
+
+  it('returns existing snapshot without wallet debit when idempotencyKey already exists', async () => {
+    const existingBet = new Bet('bet-existing', 'player-1', 'round-1', Money.fromCents(1000), undefined, 'idem-dup');
+    (betStore.findByIdempotencyKey as jest.Mock).mockReturnValueOnce(existingBet);
+
+    const result = await useCase.execute(makeCommand({ idempotencyKey: 'idem-dup' }), round);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.snapshot.betId).toBe('bet-existing');
+    }
+    expect(walletGateway.debit).not.toHaveBeenCalled();
+    expect(betStore.add).not.toHaveBeenCalled();
   });
 
   it('returns ROUND_NOT_BETTING and initiates compensating refund when round.addBet throws', async () => {
