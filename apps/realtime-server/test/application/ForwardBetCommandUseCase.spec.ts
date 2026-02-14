@@ -17,8 +17,8 @@ function createMockConnectionStore(): PlayerConnectionLookup {
 
 function createMockPublisher(): MessageBrokerPublisher {
   return {
-    publishPlaceBet: vi.fn(),
-    publishCashout: vi.fn(),
+    publishPlaceBet: vi.fn(() => true),
+    publishCashout: vi.fn(() => true),
   };
 }
 
@@ -202,5 +202,16 @@ describe('ForwardBetCommandUseCase', () => {
         amountCents: 1000,
       }),
     );
+  });
+
+  it('returns PUBLISH_FAILED when publisher returns false', () => {
+    const conn = createJoinedConnection('player-1');
+    vi.mocked(connectionStore.getByPlayerId).mockReturnValue(conn);
+    vi.mocked(publisher.publishPlaceBet).mockReturnValue(false);
+
+    const result = useCase.execute(validInput);
+
+    expect(result).toEqual({ success: false, error: 'PUBLISH_FAILED' });
+    expect(logger.info).not.toHaveBeenCalled();
   });
 });

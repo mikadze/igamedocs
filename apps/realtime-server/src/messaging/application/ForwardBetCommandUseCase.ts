@@ -13,7 +13,7 @@ export interface ForwardBetInput {
 
 export type ForwardBetResult =
   | { readonly success: true }
-  | { readonly success: false; readonly error: 'INVALID_AMOUNT' | 'INVALID_AUTOCASHOUT' | 'NOT_JOINED' | 'RATE_LIMITED' };
+  | { readonly success: false; readonly error: 'INVALID_AMOUNT' | 'INVALID_AUTOCASHOUT' | 'NOT_JOINED' | 'RATE_LIMITED' | 'PUBLISH_FAILED' };
 
 export class ForwardBetCommandUseCase {
   constructor(
@@ -41,13 +41,17 @@ export class ForwardBetCommandUseCase {
       return { success: false, error: 'NOT_JOINED' };
     }
 
-    this.publisher.publishPlaceBet({
+    const published = this.publisher.publishPlaceBet({
       idempotencyKey: input.idempotencyKey,
       playerId: input.playerId,
       roundId: input.roundId,
       amountCents: input.amountCents,
       autoCashout: input.autoCashout,
     });
+
+    if (!published) {
+      return { success: false, error: 'PUBLISH_FAILED' };
+    }
 
     this.logger.info('Forwarded place_bet command', {
       playerId: input.playerId,

@@ -5,11 +5,11 @@ export interface MessageBrokerPublisher {
     roundId: string;
     amountCents: number;
     autoCashout?: number;
-  }): void;
+  }): boolean;
 
   publishCashout(payload: {
     playerId: string;
     roundId: string;
     betId: string;
-  }): void;
+  }): boolean;
 }

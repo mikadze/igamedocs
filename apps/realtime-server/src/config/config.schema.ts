@@ -26,6 +26,8 @@ export const realtimeConfigSchema = z.object({
     )
     .default('nats://localhost:4222'),
 
+  NATS_TOKEN: z.string().min(1).optional(),
+
   JWT_PUBLIC_KEY: z
     .string({ error: 'JWT_PUBLIC_KEY is required' })
     .min(32, 'JWT_PUBLIC_KEY must be a valid PEM-encoded public key')

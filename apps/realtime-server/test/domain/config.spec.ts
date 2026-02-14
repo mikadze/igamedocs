@@ -84,6 +84,25 @@ describe('realtimeConfigSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  it('accepts optional NATS_TOKEN', () => {
+    const result = realtimeConfigSchema.safeParse({
+      ...validEnv,
+      NATS_TOKEN: 'my-secret-token',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.NATS_TOKEN).toBe('my-secret-token');
+    }
+  });
+
+  it('accepts config without NATS_TOKEN', () => {
+    const result = realtimeConfigSchema.safeParse(validEnv);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.NATS_TOKEN).toBeUndefined();
+    }
+  });
+
   it('rejects invalid NATS_URL scheme', () => {
     const result = realtimeConfigSchema.safeParse({
       ...validEnv,

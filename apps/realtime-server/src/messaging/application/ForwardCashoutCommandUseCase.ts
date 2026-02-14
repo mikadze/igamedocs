@@ -11,7 +11,7 @@ export interface ForwardCashoutInput {
 
 export type ForwardCashoutResult =
   | { readonly success: true }
-  | { readonly success: false; readonly error: 'NOT_JOINED' | 'RATE_LIMITED' };
+  | { readonly success: false; readonly error: 'NOT_JOINED' | 'RATE_LIMITED' | 'PUBLISH_FAILED' };
 
 export class ForwardCashoutCommandUseCase {
   constructor(
@@ -31,11 +31,15 @@ export class ForwardCashoutCommandUseCase {
       return { success: false, error: 'NOT_JOINED' };
     }
 
-    this.publisher.publishCashout({
+    const published = this.publisher.publishCashout({
       playerId: input.playerId,
       roundId: input.roundId,
       betId: input.betId,
     });
+
+    if (!published) {
+      return { success: false, error: 'PUBLISH_FAILED' };
+    }
 
     this.logger.info('Forwarded cashout command', {
       playerId: input.playerId,
