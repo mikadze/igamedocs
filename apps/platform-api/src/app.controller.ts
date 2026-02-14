@@ -9,7 +9,7 @@ export class AppController {
 
   @Get('health')
   @ApiOperation({ summary: 'Check service health and connectivity' })
-  getHealth() {
+  async getHealth() {
     return this.appService.getHealth();
   }
 

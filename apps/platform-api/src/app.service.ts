@@ -1,43 +1,37 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { DataSource } from 'typeorm';
-import { Cache } from 'cache-manager';
+import Redis from 'ioredis';
+import { DbService } from './db/db.service';
+import { REDIS_CLIENT } from './redis/redis.module';
 
 @Injectable()
 export class AppService {
   constructor(
-    @InjectDataSource() private readonly dataSource: DataSource,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly db: DbService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
   async getHealth() {
     const services: Record<string, string> = {};
 
-    // Check PostgreSQL
+    // Check PostgreSQL via raw pool
     try {
-      await this.dataSource.query('SELECT 1');
+      await this.db.pool.query('SELECT 1');
       services.database = 'connected';
     } catch {
       services.database = 'disconnected';
     }
 
-    // Check Redis
+    // Check Redis via direct ioredis
     try {
-      const store = (this.cacheManager as any).store;
-      if (store?.client) {
-        const pong = await store.client.ping();
-        services.redis = pong === 'PONG' ? 'connected' : 'disconnected';
-      } else {
-        await this.cacheManager.set('health-check', 'ok', 5000);
-        const val = await this.cacheManager.get('health-check');
-        services.redis = val === 'ok' ? 'connected' : 'disconnected';
-      }
+      const pong = await this.redis.ping();
+      services.redis = pong === 'PONG' ? 'connected' : 'disconnected';
     } catch {
       services.redis = 'disconnected';
     }
 
-    const allConnected = Object.values(services).every((s) => s === 'connected');
+    const allConnected = Object.values(services).every(
+      (s) => s === 'connected',
+    );
 
     return {
       status: allConnected ? 'ok' : 'degraded',
