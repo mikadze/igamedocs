@@ -1,0 +1,604 @@
+asyncapi: 3.0.0
+
+info:
+  title: Crash Game Engine
+  version: 0.1.0
+  description: |
+    Real-time crash game engine communicating exclusively over NATS.
+
+    All topics are operator-scoped under `game.{operatorId}.*`.
+    Each engine instance is deployed per-operator; the `OPERATOR_ID`
+    environment variable determines the NATS topic prefix.
+
+    ## Round Lifecycle
+
+    ```
+    round.new  ->  round.betting  ->  round.started  ->  tick (repeated)  ->  round.crashed
+    ```
+
+    1. **round.new** — A new round is announced with its hashed seed for provable fairness.
+    2. **round.betting** — The betting window opens. Clients may send `cmd.place-bet` commands.
+    3. **round.started** — Betting closes, the multiplier begins climbing.
+    4. **tick** — High-frequency multiplier updates during flight (every `TICK_INTERVAL_MS`).
+    5. **round.crashed** — The round ends. The server seed is revealed so clients can verify fairness.
+
+    During flight, clients may send `cmd.cashout` to lock in their current multiplier.
+
+    ## Provably Fair
+
+    Each round uses an HMAC-SHA512 hash of a server seed + client seed to
+    determine the crash point. The hashed seed is published at round start
+    (`round.new`) and the raw server seed is revealed at round end
+    (`round.crashed`), allowing independent verification.
+
+    ## Error Handling
+
+    - Invalid inbound commands are silently dropped after logging (Zod validation).
+    - Publish failures are logged but never crash the engine (fire-and-forget).
+    - Failed wallet credits are persisted and surfaced via `credit.failed`.
+  license:
+    name: Proprietary
+
+servers:
+  development:
+    host: localhost:4222
+    protocol: nats
+    description: Local development NATS server
+
+defaultContentType: application/json
+
+# ---------------------------------------------------------------------------
+# Channels
+# ---------------------------------------------------------------------------
+
+channels:
+  # -- Inbound commands --
+
+  cmdPlaceBet:
+    address: 'game.{operatorId}.cmd.place-bet'
+    messages:
+      PlaceBetMessage:
+        $ref: '#/components/messages/PlaceBetCommand'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  cmdCashout:
+    address: 'game.{operatorId}.cmd.cashout'
+    messages:
+      CashoutMessage:
+        $ref: '#/components/messages/CashoutCommand'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  # -- Outbound events: round lifecycle --
+
+  roundNew:
+    address: 'game.{operatorId}.round.new'
+    messages:
+      RoundNewMessage:
+        $ref: '#/components/messages/RoundNew'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  roundBetting:
+    address: 'game.{operatorId}.round.betting'
+    messages:
+      RoundBettingMessage:
+        $ref: '#/components/messages/RoundBetting'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  roundStarted:
+    address: 'game.{operatorId}.round.started'
+    messages:
+      RoundStartedMessage:
+        $ref: '#/components/messages/RoundStarted'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  roundCrashed:
+    address: 'game.{operatorId}.round.crashed'
+    messages:
+      RoundCrashedMessage:
+        $ref: '#/components/messages/RoundCrashed'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  # -- Outbound events: tick --
+
+  tick:
+    address: 'game.{operatorId}.tick'
+    messages:
+      TickMessage:
+        $ref: '#/components/messages/Tick'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  # -- Outbound events: bets --
+
+  betPlaced:
+    address: 'game.{operatorId}.bet.placed'
+    messages:
+      BetPlacedMessage:
+        $ref: '#/components/messages/BetPlaced'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  betWon:
+    address: 'game.{operatorId}.bet.won'
+    messages:
+      BetWonMessage:
+        $ref: '#/components/messages/BetWon'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  betLost:
+    address: 'game.{operatorId}.bet.lost'
+    messages:
+      BetLostMessage:
+        $ref: '#/components/messages/BetLost'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  betRejected:
+    address: 'game.{operatorId}.bet.rejected'
+    messages:
+      BetRejectedMessage:
+        $ref: '#/components/messages/BetRejected'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+  # -- Outbound events: errors --
+
+  creditFailed:
+    address: 'game.{operatorId}.credit.failed'
+    messages:
+      CreditFailedMessage:
+        $ref: '#/components/messages/CreditFailed'
+    parameters:
+      operatorId:
+        $ref: '#/components/parameters/operatorId'
+
+# ---------------------------------------------------------------------------
+# Operations
+# ---------------------------------------------------------------------------
+
+operations:
+  # -- Inbound (engine subscribes) --
+
+  receivePlaceBet:
+    action: receive
+    channel:
+      $ref: '#/channels/cmdPlaceBet'
+    summary: Place a bet during the betting window
+    description: |
+      Validated with Zod on receipt. Invalid payloads are logged and
+      dropped silently. The engine responds asynchronously via
+      `bet.placed` or `bet.rejected`.
+
+      Bets include an `idempotencyKey` (UUID) to prevent duplicate
+      placement on retries.
+    messages:
+      - $ref: '#/channels/cmdPlaceBet/messages/PlaceBetMessage'
+
+  receiveCashout:
+    action: receive
+    channel:
+      $ref: '#/channels/cmdCashout'
+    summary: Cashout an active bet during flight
+    description: |
+      Validated with Zod on receipt. The engine responds via `bet.won`
+      on success. Cashouts are only valid while the round is in the
+      RUNNING state.
+    messages:
+      - $ref: '#/channels/cmdCashout/messages/CashoutMessage'
+
+  # -- Outbound (engine publishes) --
+
+  publishRoundNew:
+    action: send
+    channel:
+      $ref: '#/channels/roundNew'
+    summary: New round announced with hashed seed
+    description: |
+      Published when a new round is created. The `hashedSeed` is the
+      SHA-256 hash of the server seed concatenated with the client seed,
+      enabling provable fairness verification after the round ends.
+    messages:
+      - $ref: '#/channels/roundNew/messages/RoundNewMessage'
+
+  publishRoundBetting:
+    action: send
+    channel:
+      $ref: '#/channels/roundBetting'
+    summary: Betting window opened
+    description: |
+      Signals that clients may now submit `cmd.place-bet` commands.
+      The `endsAt` timestamp indicates when the betting window closes.
+    messages:
+      - $ref: '#/channels/roundBetting/messages/RoundBettingMessage'
+
+  publishRoundStarted:
+    action: send
+    channel:
+      $ref: '#/channels/roundStarted'
+    summary: Flight phase started, multiplier is climbing
+    messages:
+      - $ref: '#/channels/roundStarted/messages/RoundStartedMessage'
+
+  publishRoundCrashed:
+    action: send
+    channel:
+      $ref: '#/channels/roundCrashed'
+    summary: Round ended — crash point and server seed revealed
+    description: |
+      The `serverSeed` is revealed so clients can verify the crash
+      point was provably fair using the `hashedSeed` from `round.new`.
+    messages:
+      - $ref: '#/channels/roundCrashed/messages/RoundCrashedMessage'
+
+  publishTick:
+    action: send
+    channel:
+      $ref: '#/channels/tick'
+    summary: High-frequency multiplier update during flight
+    description: |
+      Published every `TICK_INTERVAL_MS` (configurable, typically 100ms).
+      Batched internally via a double-buffer event pool for performance.
+
+      The multiplier follows an exponential growth curve:
+      `e^(growthRate * elapsedMs)`.
+    messages:
+      - $ref: '#/channels/tick/messages/TickMessage'
+
+  publishBetPlaced:
+    action: send
+    channel:
+      $ref: '#/channels/betPlaced'
+    summary: Bet successfully placed and accepted
+    messages:
+      - $ref: '#/channels/betPlaced/messages/BetPlacedMessage'
+
+  publishBetWon:
+    action: send
+    channel:
+      $ref: '#/channels/betWon'
+    summary: Bet cashed out successfully
+    messages:
+      - $ref: '#/channels/betWon/messages/BetWonMessage'
+
+  publishBetLost:
+    action: send
+    channel:
+      $ref: '#/channels/betLost'
+    summary: Bet lost — round crashed before cashout
+    messages:
+      - $ref: '#/channels/betLost/messages/BetLostMessage'
+
+  publishBetRejected:
+    action: send
+    channel:
+      $ref: '#/channels/betRejected'
+    summary: Bet rejected due to validation or business rule failure
+    messages:
+      - $ref: '#/channels/betRejected/messages/BetRejectedMessage'
+
+  publishCreditFailed:
+    action: send
+    channel:
+      $ref: '#/channels/creditFailed'
+    summary: Wallet credit failed after a won bet
+    description: |
+      The payout could not be credited to the player's wallet.
+      Persisted in FailedCreditStore for manual reconciliation.
+      Operators should monitor this topic for alerting.
+    messages:
+      - $ref: '#/channels/creditFailed/messages/CreditFailedMessage'
+
+# ---------------------------------------------------------------------------
+# Components
+# ---------------------------------------------------------------------------
+
+components:
+  parameters:
+    operatorId:
+      description: |
+        Lowercase slug identifying the operator tenant (e.g. `operator-a`).
+        Pattern: `^[a-z][a-z0-9]+(-[a-z0-9]+)*$` (3-64 chars).
+        Set via `OPERATOR_ID` environment variable at engine boot.
+
+  # -- Schemas --
+
+  schemas:
+    PlaceBetPayload:
+      type: object
+      required:
+        - idempotencyKey
+        - playerId
+        - roundId
+        - amountCents
+      properties:
+        idempotencyKey:
+          type: string
+          format: uuid
+          description: Client-generated UUID for idempotent bet placement.
+        playerId:
+          type: string
+          minLength: 1
+        roundId:
+          type: string
+          minLength: 1
+        amountCents:
+          type: integer
+          exclusiveMinimum: 0
+          description: Bet amount in cents.
+        autoCashout:
+          type: number
+          exclusiveMinimum: 0
+          description: Optional auto-cashout multiplier target.
+
+    CashoutPayload:
+      type: object
+      required:
+        - playerId
+        - roundId
+        - betId
+      properties:
+        playerId:
+          type: string
+          minLength: 1
+        roundId:
+          type: string
+          minLength: 1
+        betId:
+          type: string
+          minLength: 1
+
+    BetSnapshot:
+      type: object
+      description: Snapshot of a bet's current state.
+      required:
+        - betId
+        - playerId
+        - roundId
+        - amountCents
+        - status
+      properties:
+        betId:
+          type: string
+        playerId:
+          type: string
+        roundId:
+          type: string
+        amountCents:
+          type: integer
+          minimum: 1
+          description: Bet amount in cents.
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - WON
+            - LOST
+            - CANCELLED
+        cashoutMultiplier:
+          type: number
+          description: Multiplier at which the player cashed out. Present when status is WON.
+        payoutCents:
+          type: integer
+          description: Payout amount in cents. Present when status is WON.
+
+    BetLostPayload:
+      allOf:
+        - $ref: '#/components/schemas/BetSnapshot'
+        - type: object
+          required:
+            - crashPoint
+          properties:
+            crashPoint:
+              type: number
+              description: The multiplier at which the round crashed.
+
+    RoundNewPayload:
+      type: object
+      required:
+        - roundId
+        - hashedSeed
+      properties:
+        roundId:
+          type: string
+        hashedSeed:
+          type: string
+          description: SHA-256 hash of server seed + client seed for provable fairness verification.
+
+    RoundBettingPayload:
+      type: object
+      required:
+        - roundId
+        - endsAt
+      properties:
+        roundId:
+          type: string
+        endsAt:
+          type: number
+          description: Unix timestamp (ms) when the betting window closes.
+
+    RoundStartedPayload:
+      type: object
+      required:
+        - roundId
+      properties:
+        roundId:
+          type: string
+
+    RoundCrashedPayload:
+      type: object
+      required:
+        - roundId
+        - crashPoint
+        - serverSeed
+      properties:
+        roundId:
+          type: string
+        crashPoint:
+          type: number
+          description: The final multiplier value when the round crashed.
+        serverSeed:
+          type: string
+          description: Revealed server seed for provable fairness verification.
+
+    TickPayload:
+      type: object
+      required:
+        - roundId
+        - multiplier
+        - elapsedMs
+      properties:
+        roundId:
+          type: string
+        multiplier:
+          type: number
+          description: Current multiplier value (exponential growth curve).
+        elapsedMs:
+          type: number
+          description: Milliseconds elapsed since round started.
+
+    BetRejectedPayload:
+      type: object
+      required:
+        - playerId
+        - roundId
+        - amountCents
+        - error
+      properties:
+        playerId:
+          type: string
+        roundId:
+          type: string
+        amountCents:
+          type: integer
+        error:
+          type: string
+          description: |
+            Rejection reason. Known values:
+            `BELOW_MIN_BET`, `ABOVE_MAX_BET`, `INSUFFICIENT_FUNDS`,
+            `PLAYER_BLOCKED`, `WALLET_TIMEOUT`, `ROUND_NOT_BETTING`.
+
+    CreditFailedPayload:
+      type: object
+      required:
+        - playerId
+        - betId
+        - roundId
+        - payoutCents
+        - reason
+      properties:
+        playerId:
+          type: string
+        betId:
+          type: string
+        roundId:
+          type: string
+        payoutCents:
+          type: integer
+        reason:
+          type: string
+
+  # -- Messages --
+
+  messages:
+    PlaceBetCommand:
+      name: PlaceBetCommand
+      title: Place Bet
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PlaceBetPayload'
+
+    CashoutCommand:
+      name: CashoutCommand
+      title: Cashout
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CashoutPayload'
+
+    RoundNew:
+      name: RoundNew
+      title: Round New
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RoundNewPayload'
+
+    RoundBetting:
+      name: RoundBetting
+      title: Round Betting
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RoundBettingPayload'
+
+    RoundStarted:
+      name: RoundStarted
+      title: Round Started
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RoundStartedPayload'
+
+    RoundCrashed:
+      name: RoundCrashed
+      title: Round Crashed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RoundCrashedPayload'
+
+    Tick:
+      name: Tick
+      title: Multiplier Tick
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/TickPayload'
+
+    BetPlaced:
+      name: BetPlaced
+      title: Bet Placed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/BetSnapshot'
+
+    BetWon:
+      name: BetWon
+      title: Bet Won
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/BetSnapshot'
+
+    BetLost:
+      name: BetLost
+      title: Bet Lost
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/BetLostPayload'
+
+    BetRejected:
+      name: BetRejected
+      title: Bet Rejected
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/BetRejectedPayload'
+
+    CreditFailed:
+      name: CreditFailed
+      title: Credit Failed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CreditFailedPayload'
