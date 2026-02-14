@@ -1,27 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BroadcastGameEventUseCase } from '@messaging/application/BroadcastGameEventUseCase';
-import type { BroadcastInput } from '@messaging/application/BroadcastGameEventUseCase';
-import type { PlayerConnectionLookup } from '@shared/ports/PlayerConnectionLookup';
-import type { WebSocketSender } from '@connection/application/ports/WebSocketSender';
+import type { MessageDelivery } from '@messaging/application/ports/MessageDelivery';
 import type { MessageSerializer } from '@messaging/application/ports/MessageSerializer';
 import type { Logger } from '@shared/ports/Logger';
 import type { ServerMessage } from '@messaging/domain/ServerMessage';
-import { Connection } from '@connection/domain/Connection';
-import { ConnectionId } from '@connection/domain/ConnectionId';
 
-function createMockConnectionStore(): PlayerConnectionLookup {
+function createMockDelivery(): MessageDelivery {
   return {
-    getById: vi.fn(),
-    getByPlayerId: vi.fn(),
-  };
-}
-
-function createMockSender(): WebSocketSender {
-  return {
-    send: vi.fn(),
-    broadcastToAllJoined: vi.fn(),
-    close: vi.fn(),
-    getBufferedAmount: vi.fn(() => 0),
+    sendToPlayer: vi.fn(),
+    broadcastToAll: vi.fn(),
   };
 }
 
@@ -36,38 +23,17 @@ function createMockLogger(): Logger {
   return { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 }
 
-function createJoinedConnection(
-  playerId: string,
-  id?: ConnectionId,
-): Connection {
-  const conn = Connection.create(
-    id ?? ConnectionId.generate(),
-    playerId,
-    'operator-a',
-    Date.now(),
-  );
-  conn.joinRoom();
-  return conn;
-}
-
 describe('BroadcastGameEventUseCase', () => {
-  let connectionStore: PlayerConnectionLookup;
-  let sender: WebSocketSender;
+  let delivery: MessageDelivery;
   let serializer: MessageSerializer;
   let logger: Logger;
   let useCase: BroadcastGameEventUseCase;
 
   beforeEach(() => {
-    connectionStore = createMockConnectionStore();
-    sender = createMockSender();
+    delivery = createMockDelivery();
     serializer = createMockSerializer();
     logger = createMockLogger();
-    useCase = new BroadcastGameEventUseCase(
-      connectionStore,
-      sender,
-      serializer,
-      logger,
-    );
+    useCase = new BroadcastGameEventUseCase(delivery, serializer, logger);
   });
 
   describe('broadcast messages (non-player-specific)', () => {
@@ -78,13 +44,13 @@ describe('BroadcastGameEventUseCase', () => {
       elapsedMs: 500,
     };
 
-    it('encodes message once and delegates broadcast to sender', () => {
+    it('encodes message once and delegates broadcast to delivery', () => {
       useCase.execute({ serverMessage: tickMessage });
 
       expect(serializer.encodeServerMessage).toHaveBeenCalledOnce();
       expect(serializer.encodeServerMessage).toHaveBeenCalledWith(tickMessage);
-      expect(sender.broadcastToAllJoined).toHaveBeenCalledOnce();
-      expect(sender.broadcastToAllJoined).toHaveBeenCalledWith(
+      expect(delivery.broadcastToAll).toHaveBeenCalledOnce();
+      expect(delivery.broadcastToAll).toHaveBeenCalledWith(
         new Uint8Array([1, 2, 3]),
       );
     });
@@ -134,16 +100,12 @@ describe('BroadcastGameEventUseCase', () => {
     ])('broadcasts $type to all joined', ({ msg }) => {
       useCase.execute({ serverMessage: msg });
 
-      expect(sender.broadcastToAllJoined).toHaveBeenCalledOnce();
+      expect(delivery.broadcastToAll).toHaveBeenCalledOnce();
     });
   });
 
   describe('player-specific messages', () => {
     it('sends bet_rejected only to the target player', () => {
-      const connId = ConnectionId.generate();
-      const conn = createJoinedConnection('p1', connId);
-      vi.mocked(connectionStore.getByPlayerId).mockReturnValue(conn);
-
       const msg: ServerMessage = {
         type: 'bet_rejected',
         playerId: 'p1',
@@ -154,19 +116,15 @@ describe('BroadcastGameEventUseCase', () => {
 
       useCase.execute({ serverMessage: msg, targetPlayerId: 'p1' });
 
-      expect(sender.send).toHaveBeenCalledOnce();
-      expect(sender.send).toHaveBeenCalledWith(
-        connId,
+      expect(delivery.sendToPlayer).toHaveBeenCalledOnce();
+      expect(delivery.sendToPlayer).toHaveBeenCalledWith(
+        'p1',
         new Uint8Array([1, 2, 3]),
       );
-      expect(sender.broadcastToAllJoined).not.toHaveBeenCalled();
+      expect(delivery.broadcastToAll).not.toHaveBeenCalled();
     });
 
     it('sends credit_failed only to the target player', () => {
-      const connId = ConnectionId.generate();
-      const conn = createJoinedConnection('p1', connId);
-      vi.mocked(connectionStore.getByPlayerId).mockReturnValue(conn);
-
       const msg: ServerMessage = {
         type: 'credit_failed',
         playerId: 'p1',
@@ -178,52 +136,8 @@ describe('BroadcastGameEventUseCase', () => {
 
       useCase.execute({ serverMessage: msg, targetPlayerId: 'p1' });
 
-      expect(sender.send).toHaveBeenCalledOnce();
-      expect(sender.broadcastToAllJoined).not.toHaveBeenCalled();
-    });
-
-    it('warns and drops if target player is not found', () => {
-      vi.mocked(connectionStore.getByPlayerId).mockReturnValue(undefined);
-
-      const msg: ServerMessage = {
-        type: 'bet_rejected',
-        playerId: 'p1',
-        roundId: 'r1',
-        amountCents: 100,
-        error: 'ERR',
-      };
-
-      useCase.execute({ serverMessage: msg, targetPlayerId: 'p1' });
-
-      expect(sender.send).not.toHaveBeenCalled();
-      expect(sender.broadcastToAllJoined).not.toHaveBeenCalled();
-      expect(logger.warn).toHaveBeenCalledWith(
-        'Cannot send player-specific message: player not joined',
-        { playerId: 'p1' },
-      );
-    });
-
-    it('warns and drops if target player is not JOINED', () => {
-      const conn = Connection.create(
-        ConnectionId.generate(),
-        'p1',
-        'operator-a',
-        Date.now(),
-      );
-      vi.mocked(connectionStore.getByPlayerId).mockReturnValue(conn);
-
-      const msg: ServerMessage = {
-        type: 'bet_rejected',
-        playerId: 'p1',
-        roundId: 'r1',
-        amountCents: 100,
-        error: 'ERR',
-      };
-
-      useCase.execute({ serverMessage: msg, targetPlayerId: 'p1' });
-
-      expect(sender.send).not.toHaveBeenCalled();
-      expect(logger.warn).toHaveBeenCalled();
+      expect(delivery.sendToPlayer).toHaveBeenCalledOnce();
+      expect(delivery.broadcastToAll).not.toHaveBeenCalled();
     });
   });
 
@@ -247,7 +161,7 @@ describe('BroadcastGameEventUseCase', () => {
       const msg: ServerMessage = { type: 'round_started', roundId: 'r1' };
       useCase.execute({ serverMessage: msg });
 
-      expect(sender.broadcastToAllJoined).toHaveBeenCalledWith(encodedData);
+      expect(delivery.broadcastToAll).toHaveBeenCalledWith(encodedData);
     });
   });
 
@@ -263,8 +177,8 @@ describe('BroadcastGameEventUseCase', () => {
 
       useCase.execute({ serverMessage: msg, targetPlayerId: 'p1' });
 
-      expect(sender.broadcastToAllJoined).toHaveBeenCalledOnce();
-      expect(sender.send).not.toHaveBeenCalled();
+      expect(delivery.broadcastToAll).toHaveBeenCalledOnce();
+      expect(delivery.sendToPlayer).not.toHaveBeenCalled();
     });
   });
 });

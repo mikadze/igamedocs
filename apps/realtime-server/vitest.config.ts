@@ -19,6 +19,7 @@ export default defineConfig({
       '@transport': resolve(__dirname, 'src/transport'),
       '@shared': resolve(__dirname, 'src/shared'),
       '@config': resolve(__dirname, 'src/config'),
+      '@generated': resolve(__dirname, 'src/generated'),
     },
   },
 });

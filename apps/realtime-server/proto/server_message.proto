@@ -14,6 +14,8 @@ message ServerMessage {
     BetRejected bet_rejected = 9;
     Pong pong = 10;
     Error error = 11;
+    ReAuthRequired re_auth_required = 12;
+    CreditFailed credit_failed = 13;
   }
 }
 
@@ -72,6 +74,18 @@ message BetRejected {
   string round_id = 2;
   int32 amount_cents = 3;
   string error = 4;
+}
+
+message ReAuthRequired {
+  int64 deadline_ms = 1;
+}
+
+message CreditFailed {
+  string player_id = 1;
+  string bet_id = 2;
+  string round_id = 3;
+  int32 payout_cents = 4;
+  string reason = 5;
 }
 
 message Pong {}

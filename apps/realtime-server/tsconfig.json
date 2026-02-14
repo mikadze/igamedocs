@@ -18,7 +18,8 @@
       "@messaging/*": ["src/messaging/*"],
       "@transport/*": ["src/transport/*"],
       "@shared/*": ["src/shared/*"],
-      "@config/*": ["src/config/*"]
+      "@config/*": ["src/config/*"],
+      "@generated/*": ["src/generated/*"]
     }
   },
   "include": ["src/**/*.ts"],

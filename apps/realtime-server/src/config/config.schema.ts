@@ -43,6 +43,11 @@ export const realtimeConfigSchema = z.object({
   LOG_LEVEL: z
     .enum(['debug', 'info', 'warn', 'error'])
     .default('info'),
+
+  ALLOWED_ORIGINS: z
+    .string()
+    .default('')
+    .transform((v) => v.split(',').map((s) => s.trim()).filter(Boolean)),
 });
 
 export type RawRealtimeConfig = z.infer<typeof realtimeConfigSchema>;
@@ -72,6 +77,7 @@ export function loadConfig(): {
     operatorId: raw.OPERATOR_ID,
     wsPort: raw.WS_PORT,
     maxConnections: raw.MAX_CONNECTIONS,
+    allowedOrigins: raw.ALLOWED_ORIGINS,
   };
 
   return { raw, config };

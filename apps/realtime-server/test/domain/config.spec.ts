@@ -37,6 +37,21 @@ describe('realtimeConfigSchema', () => {
       expect(result.data.NATS_URL).toBe('nats://localhost:4222');
       expect(result.data.MAX_CONNECTIONS).toBe(10000);
       expect(result.data.LOG_LEVEL).toBe('info');
+      expect(result.data.ALLOWED_ORIGINS).toEqual([]);
+    }
+  });
+
+  it('parses ALLOWED_ORIGINS as comma-separated list', () => {
+    const result = realtimeConfigSchema.safeParse({
+      ...validEnv,
+      ALLOWED_ORIGINS: 'https://a.com, https://b.com',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.ALLOWED_ORIGINS).toEqual([
+        'https://a.com',
+        'https://b.com',
+      ]);
     }
   });
 
@@ -109,6 +124,7 @@ describe('loadConfig', () => {
       expect(raw.OPERATOR_ID).toBe('test-op');
       expect(config.operatorId).toBe('test-op');
       expect(config.wsPort).toBe(8080);
+      expect(config.allowedOrigins).toEqual([]);
     } finally {
       Object.assign(process.env, originalEnv);
     }

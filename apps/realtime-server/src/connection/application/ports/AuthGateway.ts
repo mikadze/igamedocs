@@ -4,5 +4,5 @@ export interface AuthPayload {
 }
 
 export interface AuthGateway {
-  verify(token: string): AuthPayload | null;
+  verify(token: string): Promise<AuthPayload | null>;
 }
