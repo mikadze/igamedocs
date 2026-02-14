@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
+    "test:integration": "bun test test/integration/",
     "proto:gen": "buf generate proto/"
   },
   "dependencies": {
