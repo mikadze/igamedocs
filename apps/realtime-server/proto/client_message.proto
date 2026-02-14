@@ -1,0 +1,24 @@
+syntax = "proto3";
+package aviatrix.realtime;
+
+message ClientMessage {
+  oneof payload {
+    PlaceBet place_bet = 1;
+    Cashout cashout = 2;
+    Ping ping = 3;
+  }
+}
+
+message PlaceBet {
+  string idempotency_key = 1;
+  string round_id = 2;
+  int32 amount_cents = 3;
+  optional double auto_cashout = 4;
+}
+
+message Cashout {
+  string round_id = 1;
+  string bet_id = 2;
+}
+
+message Ping {}

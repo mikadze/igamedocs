@@ -250,39 +250,50 @@ sequenceDiagram
     participant WH as Webhook Event Bus
     participant ENG as Game Engine
     participant FE as Player Frontend
+    participant WS as Realtime Server
     participant PLR as Player
 
-    Note over OP,PLR: PHASE 1 — Integration Setup
+    Note over OP,PLR: PHASE 1 — Integration Setup (Out-of-Band)
 
     OP->>API: Register operator (API key + config)
     API->>OP: Operator credentials + SDK bundle
+    OP->>API: Exchange RSA public keys (operator → Aviatrix, Aviatrix → operator)
+    API->>OP: Aviatrix RSA public key + whitelisted IPs
     OP->>SDK: Install Wallet Adapter SDK
     SDK->>OW: Configure wallet endpoint mapping
     OP->>API: Configure webhook endpoints
     API->>OP: Integration test suite (sandbox)
 
-    Note over OP,PLR: PHASE 2 — Game Launch (iFrame)
+    Note over OP,PLR: PHASE 2 — Game Launch (Opaque Token Exchange)
 
-    PLR->>OP: Open crash game on operator site
-    OP->>API: Launch game (operator_token + player_token)
-    API->>API: Validate operator + player
-    API->>FE: Serve game in iFrame
-    FE->>PLR: Game loaded
+    PLR->>OP: Click "Play Crash" on operator site
+    OP->>OP: Generate opaque session token (UUID) → maps to user_id, currency, operator_id
+    OP->>PLR: Open iFrame: aviatrix.bet/play?token=abc-123&operator=softswiss
+    PLR->>FE: Load game with opaque token
+    FE->>API: POST /auth/launch { token: "abc-123", operator: "softswiss" }
+    API->>OP: POST /validate-token { token: "abc-123" } (RSA-signed request)
+    OP->>API: 200 OK { user_id, currency, operator_id } (RSA-signed response)
+    API->>API: Issue internal JWT (RS256 private key) with playerId + operatorId claims
+    API->>FE: { jwt: "eyJ...", expiresIn: 3600 }
+    FE->>WS: WebSocket upgrade + JWT in Authorization header
+    WS->>WS: Verify JWT with RS256 public key (never holds private key)
+    WS->>FE: Connected + current round state
 
-    Note over OP,PLR: PHASE 3 — Wallet Flows
+    Note over OP,PLR: PHASE 3 — Wallet Flows (RSA-Signed)
 
     PLR->>FE: Place bet ($10)
     FE->>ENG: bet.place
     ENG->>SDK: Debit $10 from player
-    SDK->>OW: POST /wallet/debit (player_id, amount, round_id)
-    OW->>SDK: 200 OK (new_balance)
+    SDK->>OW: POST /wallet/debit { player_id, amount, round_id, transaction_id }<br/>Headers: X-Signature (RSA-SHA256), X-Timestamp, X-Nonce
+    OW->>OW: Verify RSA signature with Aviatrix public key
+    OW->>SDK: 200 OK { new_balance } (RSA-signed response)
     SDK->>ENG: Funds locked
 
     Note over ENG: Round plays out...
 
     ENG->>SDK: Credit $25 (cashout at 2.5x)
-    SDK->>OW: POST /wallet/credit (player_id, amount, round_id)
-    OW->>SDK: 200 OK (new_balance)
+    SDK->>OW: POST /wallet/credit { player_id, amount, round_id, transaction_id }<br/>Headers: X-Signature (RSA-SHA256), X-Timestamp, X-Nonce
+    OW->>SDK: 200 OK { new_balance }
     ENG->>FE: Win confirmed
 
     Note over OP,PLR: PHASE 4 — Event Webhooks
@@ -294,9 +305,17 @@ sequenceDiagram
     ENG->>WH: Tournament result event
     WH->>OP: POST /webhooks/tournament (leaderboard, prizes)
 
-    Note over OP,PLR: PHASE 5 — Analytics & Reporting
+    Note over OP,PLR: PHASE 5 — Session Re-Auth (Long Sessions)
 
-    OP->>API: GET /operator/analytics (date_range, metrics)
+    WS->>FE: re_auth_required { deadline_ms }
+    FE->>API: POST /auth/refresh { currentJwt }
+    API->>FE: { jwt: "eyJ...new", expiresIn: 3600 }
+    FE->>WS: re_auth { token: "eyJ...new" }
+    WS->>WS: Verify new JWT, update session expiry
+
+    Note over OP,PLR: PHASE 6 — Analytics & Reporting
+
+    OP->>API: GET /operator/analytics (date_range, metrics)<br/>Headers: X-Signature (RSA-SHA256)
     API->>OP: GGR, player counts, round stats
     OP->>API: GET /operator/players (activity, LTV)
     API->>OP: Player engagement data

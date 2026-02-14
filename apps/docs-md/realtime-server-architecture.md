@@ -7,7 +7,7 @@ WebSocket bridge between browser clients and the crash game engine via NATS.
 The realtime-server is the **client-facing edge** of the Aviatrix platform. It maintains WebSocket connections with players and translates between the browser wire protocol (Protobuf over WebSocket) and the internal NATS message bus.
 
 **What it does:**
-- Accepts WebSocket connections from players, authenticates via JWT on upgrade
+- Accepts WebSocket connections from players, authenticates via asymmetric JWT (RS256/EdDSA public key) on upgrade
 - Subscribes to operator-scoped NATS topics published by the game-engine
 - Broadcasts game events (ticks, round state, bet confirmations) to connected clients
 - Receives player commands (place bet, cashout) via WebSocket, validates, and forwards to NATS
@@ -58,7 +58,7 @@ flowchart LR
     NatsBridge -->|subscribe| PubTopics
     NatsBridge -->|publish| CmdTopics
     GameLoop -->|publish| PubTopics
-    GameLoop <--|subscribe| CmdTopics
+    CmdTopics -->|subscribe| GameLoop
 ```
 
 ---
@@ -150,8 +150,8 @@ export class Connection {
     readonly connectedAt: number,
   ) {}
 
-  static create(id: ConnectionId, playerId: string, operatorId: string): Connection {
-    return new Connection(id, playerId, operatorId, ConnectionState.AUTHENTICATED, Date.now());
+  static create(id: ConnectionId, playerId: string, operatorId: string, connectedAt: number): Connection {
+    return new Connection(id, playerId, operatorId, ConnectionState.AUTHENTICATED, connectedAt);
   }
 
   joinRoom(): void {
@@ -196,7 +196,8 @@ stateDiagram-v2
 export type ClientMessage =
   | { readonly type: 'place_bet'; readonly idempotencyKey: string; readonly roundId: string; readonly amountCents: number; readonly autoCashout?: number }
   | { readonly type: 'cashout'; readonly roundId: string; readonly betId: string }
-  | { readonly type: 'ping' };
+  | { readonly type: 'ping' }
+  | { readonly type: 're_auth'; readonly token: string };
 ```
 
 ### 4.4 Server Messages (Outbound)
@@ -214,7 +215,9 @@ export type ServerMessage =
   | { readonly type: 'bet_lost'; readonly betId: string; readonly playerId: string; readonly roundId: string; readonly amountCents: number; readonly crashPoint: number }
   | { readonly type: 'bet_rejected'; readonly playerId: string; readonly roundId: string; readonly amountCents: number; readonly error: string }
   | { readonly type: 'pong' }
-  | { readonly type: 'error'; readonly code: string; readonly message: string };
+  | { readonly type: 'error'; readonly code: string; readonly message: string }
+  | { readonly type: 're_auth_required'; readonly deadlineMs: number }
+  | { readonly type: 'credit_failed'; readonly playerId: string; readonly betId: string; readonly roundId: string; readonly payoutCents: number; readonly reason: string };
 ```
 
 ---
@@ -239,7 +242,9 @@ type ConnectResult =
   | { success: false; error: 'OPERATOR_MISMATCH' | 'ALREADY_CONNECTED' };
 ```
 
-**Flow:** Validate operator matches server's configured operator → create Connection entity → store in ConnectionStore → mark JOINED.
+**Flow:** Validate operator matches server's configured operator → check for existing connection by playerId → if found, close old connection via `WebSocketSender.close(oldConnId, 4001, 'Replaced by new connection')` and remove from store → create Connection entity → store in ConnectionStore → mark JOINED.
+
+**Duplicate connections:** A player opening a second tab replaces the previous connection. The old WebSocket receives close code `4001` so the client knows it was displaced, not disconnected by error.
 
 ### 5.2 HandleDisconnectionUseCase
 
@@ -298,7 +303,7 @@ interface BroadcastInput {
 }
 ```
 
-**Flow:** If `targetPlayerId` is set (e.g., `bet_rejected` is player-specific) → send to that connection only. Otherwise → fan-out to all JOINED connections via ConnectionStore. Serialize with MessageSerializer before sending.
+**Flow:** If `targetPlayerId` is set (e.g., `bet_rejected` is player-specific) → send to that connection only. Otherwise → serialize once with MessageSerializer, then fan-out to all JOINED connections via `connectionStore.forEachJoined()` (iterator avoids array allocation on the 50ms tick hot path — mirrors game-engine's `forEachAutoCashout` pattern).
 
 **Routing rules:**
 | NATS Event | Target | Notes |
@@ -325,7 +330,9 @@ interface RouteInput {
 **Flow:** Switch on `message.type`:
 - `place_bet` → delegate to ForwardBetCommandUseCase
 - `cashout` → delegate to ForwardCashoutCommandUseCase
-- `ping` → respond with `pong` directly
+- `re_auth` → delegate to HandleReAuthUseCase (verify new JWT, update connection's auth expiry)
+
+> **Note:** `ping`/`pong` is handled directly in the transport layer (`wsHandlers.ts`) since it is a transport-level keepalive, not business logic. It never reaches this use case.
 
 ---
 
@@ -339,6 +346,7 @@ export interface ConnectionStore {
   getById(id: ConnectionId): Connection | undefined;
   getByPlayerId(playerId: string): Connection | undefined;
   getAllJoined(): Connection[];
+  forEachJoined(callback: (connection: Connection) => void): void;  // hot-path iterator — avoids array allocation
   count(): number;
 }
 
@@ -419,6 +427,11 @@ Bun.serve({
   port: config.wsPort,
 
   fetch(req, server) {
+    // Reject if at capacity
+    if (connectionStore.count() >= config.maxConnections) {
+      return new Response('Service Unavailable', { status: 503 });
+    }
+
     // Extract JWT from query string or header
     const token = extractToken(req);
     const auth = authGateway.verify(token);
@@ -432,12 +445,30 @@ Bun.serve({
     open(ws) {
       const connId = ConnectionId.generate();
       ws.data.connectionId = connId;
-      handleConnectionUseCase.execute({ connectionId: connId, playerId: ws.data.playerId, operatorId: ws.data.operatorId });
+      handleConnectionUseCase.execute({
+        connectionId: connId,
+        playerId: ws.data.playerId,
+        operatorId: ws.data.operatorId,
+        connectedAt: Date.now(),
+      });
     },
 
     message(ws, raw) {
-      const msg = messageSerializer.decodeClientMessage(raw);
-      routeClientMessageUseCase.execute({ connectionId: ws.data.connectionId, message: msg });
+      try {
+        const msg = messageSerializer.decodeClientMessage(raw);
+
+        // Ping/pong is a transport-level keepalive — handle here, not in use case
+        if (msg.type === 'ping') {
+          ws.send(messageSerializer.encodeServerMessage({ type: 'pong' }));
+          return;
+        }
+
+        routeClientMessageUseCase.execute({ connectionId: ws.data.connectionId, message: msg });
+      } catch {
+        ws.send(messageSerializer.encodeServerMessage({
+          type: 'error', code: 'INVALID_MESSAGE', message: 'Failed to decode message',
+        }));
+      }
     },
 
     close(ws) {
@@ -457,11 +488,23 @@ Implements `MessageSerializer` port using generated Protobuf classes from `.prot
 
 ### 7.4 InMemoryConnectionStore
 
-`Map<string, Connection>` with secondary index `Map<playerId, ConnectionId>` for player lookups.
+`Map<string, Connection>` with secondary index `Map<playerId, ConnectionId>` for player lookups. `forEachJoined()` iterates the primary map and filters by `JOINED` state without allocating an intermediate array — critical for the 50ms tick broadcast hot path.
 
 ### 7.5 JwtAuthGateway
 
-Verifies JWT using shared secret or public key. Extracts `playerId` and `operatorId` claims.
+Verifies JWT using asymmetric public key (RS256 or EdDSA). The Platform API signs tokens with its private key; the Realtime Server only holds the public key — a compromise of the Realtime Server cannot forge tokens. Extracts `playerId` and `operatorId` claims.
+
+**Algorithm enforcement:** Must explicitly set `algorithms: ['RS256']` (or `['EdDSA']`) and reject all others to prevent algorithm confusion attacks (e.g., `alg: none` or HS256-with-public-key forgery).
+
+### 7.6 Per-Connection Rate Limiter
+
+Each WebSocket connection is rate-limited at the transport layer to prevent abuse. A malicious client flooding `place_bet` or `cashout` messages could overwhelm NATS and the game-engine's command queues.
+
+**Strategy:** Token-bucket per connection (e.g., 10 messages/second, burst of 20). Implemented in `wsHandlers.ts` before deserialization — rejects at the edge before messages hit NATS.
+
+**On violation:** Send `{ type: 'error', code: 'RATE_LIMITED', message: 'Too many messages' }` → if sustained, close connection with code `4008`.
+
+> **Note:** `ping` messages are exempt from rate limiting (transport keepalive).
 
 ---
 
@@ -478,13 +521,14 @@ message ClientMessage {
     PlaceBet place_bet = 1;
     Cashout cashout = 2;
     Ping ping = 3;
+    ReAuth re_auth = 4;
   }
 }
 
 message PlaceBet {
   string idempotency_key = 1;
   string round_id = 2;
-  int32 amount_cents = 3;
+  uint32 amount_cents = 3;  // unsigned — negative amounts rejected at wire level
   optional double auto_cashout = 4;
 }
 
@@ -494,6 +538,10 @@ message Cashout {
 }
 
 message Ping {}
+
+message ReAuth {
+  string token = 1;  // fresh JWT from Platform API
+}
 ```
 
 ### 8.2 `proto/server_message.proto`
@@ -515,6 +563,8 @@ message ServerMessage {
     BetRejected bet_rejected = 9;
     Pong pong = 10;
     Error error = 11;
+    ReAuthRequired re_auth_required = 12;
+    CreditFailed credit_failed = 13;
   }
 }
 
@@ -548,30 +598,30 @@ message BetPlaced {
   string bet_id = 1;
   string player_id = 2;
   string round_id = 3;
-  int32 amount_cents = 4;
+  uint32 amount_cents = 4;
 }
 
 message BetWon {
   string bet_id = 1;
   string player_id = 2;
   string round_id = 3;
-  int32 amount_cents = 4;
+  uint32 amount_cents = 4;
   double cashout_multiplier = 5;
-  int32 payout_cents = 6;
+  uint32 payout_cents = 6;
 }
 
 message BetLost {
   string bet_id = 1;
   string player_id = 2;
   string round_id = 3;
-  int32 amount_cents = 4;
+  uint32 amount_cents = 4;
   double crash_point = 5;
 }
 
 message BetRejected {
   string player_id = 1;
   string round_id = 2;
-  int32 amount_cents = 3;
+  uint32 amount_cents = 3;
   string error = 4;
 }
 
@@ -580,6 +630,18 @@ message Pong {}
 message Error {
   string code = 1;
   string message = 2;
+}
+
+message ReAuthRequired {
+  int64 deadline_ms = 1;  // client must re-auth before this timestamp
+}
+
+message CreditFailed {
+  string player_id = 1;
+  string bet_id = 2;
+  string round_id = 3;
+  uint32 payout_cents = 4;
+  string reason = 5;
 }
 ```
 
@@ -724,7 +786,7 @@ export const realtimeConfigSchema = z.object({
   OPERATOR_ID: z.string().min(3).regex(/^[a-z][a-z0-9]+(-[a-z0-9]+)*$/),
   WS_PORT: z.coerce.number().int().min(1024).max(65535).default(8080),
   NATS_URL: z.string().url().default('nats://localhost:4222'),
-  JWT_SECRET: z.string().min(32),
+  JWT_PUBLIC_KEY: z.string().min(32),  // PEM-encoded RS256/EdDSA public key
   MAX_CONNECTIONS: z.coerce.number().int().positive().default(10000),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });
@@ -749,7 +811,7 @@ export interface RealtimeConfig {
 OPERATOR_ID=operator-a
 WS_PORT=8080
 NATS_URL=nats://localhost:4222
-JWT_SECRET=your-secret-key-min-32-characters-long
+JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\nMIIBI...your-RS256-public-key...\n-----END PUBLIC KEY-----"
 MAX_CONNECTIONS=10000
 LOG_LEVEL=info
 ```
@@ -825,7 +887,7 @@ RT-1 Scaffold ──→ RT-2 Domain + Application ──→ RT-3 WebSocket Trans
 |----|------|-------|---------------------|------|------|
 | RT-1.1 | Initialize `apps/realtime-server/` | `package.json`, `tsconfig.json`, `.env.example`, all `src/` directory stubs, `test/` dirs | `bun install` succeeds; dir structure matches architecture doc; `turbo build` includes realtime-server | — | S |
 | RT-1.2 | Configure TypeScript strict + path aliases | `tsconfig.json` | `strict: true`; path aliases `@connection/`, `@messaging/`, `@transport/`, `@shared/`, `@config/` resolve; `bun run typecheck` passes | RT-1.1 | S |
-| RT-1.3 | Config module + Zod schema | `src/config/config.schema.ts`, `src/config/RealtimeConfig.ts` | Validates env via Zod at startup; missing `JWT_SECRET` = clear error with var name; exports `RawRealtimeConfig` and domain `RealtimeConfig` | RT-1.1 | S |
+| RT-1.3 | Config module + Zod schema | `src/config/config.schema.ts`, `src/config/RealtimeConfig.ts` | Validates env via Zod at startup; missing `JWT_PUBLIC_KEY` = clear error with var name; exports `RawRealtimeConfig` and domain `RealtimeConfig` | RT-1.1 | S |
 | RT-1.4 | NATS topic constants | `src/messaging/infrastructure/topics.ts` | Reuses `GameTopics` interface and `createTopics(operatorId)` pattern from game-engine; operator-prefixed topics | RT-1.1 | S |
 | RT-1.5 | Protobuf schema definition | `proto/client_message.proto`, `proto/server_message.proto` | `.proto` files compile with `protoc` or `buf`; covers all message types from Section 8; generates TypeScript bindings | RT-1.1 | M |
 | RT-1.6 | Test runner setup | `vitest.config.ts` or bun test config | `bun test test/domain/` runs; coverage works | RT-1.1 | S |
@@ -847,15 +909,15 @@ Parallel tracks:
 | RT-2.1 | `ConnectionId` value object | `src/connection/domain/ConnectionId.ts`, test | `ConnectionId.generate()` returns unique ID; equality by value; zero npm imports | RT-1.6 | S |
 | RT-2.2 | `ConnectionState` enum + transitions | `src/connection/domain/ConnectionState.ts`, test | `AUTHENTICATED → JOINED → DISCONNECTED`; `canTransition(from, to)` pure function | RT-1.1 | S |
 | RT-2.3 | `Connection` entity | `src/connection/domain/Connection.ts`, test | Factory `Connection.create()`; `joinRoom()`, `disconnect()` enforce state transitions; rejects invalid transitions; zero npm imports | RT-2.1, RT-2.2 | S |
-| RT-2.4 | `ClientMessage` discriminated union | `src/messaging/domain/ClientMessage.ts` | `place_bet`, `cashout`, `ping` variants; readonly properties; TypeScript exhaustiveness checkable | RT-1.1 | S |
-| RT-2.5 | `ServerMessage` discriminated union | `src/messaging/domain/ServerMessage.ts` | All 11 variants matching Section 4.4; readonly properties | RT-1.1 | S |
+| RT-2.4 | `ClientMessage` discriminated union | `src/messaging/domain/ClientMessage.ts` | `place_bet`, `cashout`, `ping`, `re_auth` variants; readonly properties; TypeScript exhaustiveness checkable | RT-1.1 | S |
+| RT-2.5 | `ServerMessage` discriminated union | `src/messaging/domain/ServerMessage.ts` | All 13 variants matching Section 4.4 (including `re_auth_required` and `credit_failed`); readonly properties | RT-1.1 | S |
 | RT-2.6 | Port interfaces (all) | `src/connection/application/ports/*.ts`, `src/messaging/application/ports/*.ts` | All 7 port interfaces from Section 6 defined; zero framework imports; `grep -r "bun\|nats\|protobuf\|jsonwebtoken" src/*/application/` = 0 | RT-2.3, RT-2.4, RT-2.5 | M |
-| RT-2.7 | `HandleConnectionUseCase` | `src/connection/application/HandleConnectionUseCase.ts`, test | Creates Connection; stores in ConnectionStore; rejects operator mismatch; tests use mock ports | RT-2.3, RT-2.6 | S |
+| RT-2.7 | `HandleConnectionUseCase` | `src/connection/application/HandleConnectionUseCase.ts`, test | Creates Connection; checks for existing connection by playerId (closes old via WebSocketSender if found); stores in ConnectionStore; rejects operator mismatch; tests use mock ports | RT-2.3, RT-2.6 | S |
 | RT-2.8 | `HandleDisconnectionUseCase` | `src/connection/application/HandleDisconnectionUseCase.ts`, test | Retrieves connection; calls disconnect(); removes from store; no-op if already disconnected | RT-2.3, RT-2.6 | S |
 | RT-2.9 | `ForwardBetCommandUseCase` | `src/messaging/application/ForwardBetCommandUseCase.ts`, test | Validates amountCents > 0; verifies player JOINED via ConnectionStore; publishes to MessageBrokerPublisher; returns result union | RT-2.6 | S |
 | RT-2.10 | `ForwardCashoutCommandUseCase` | `src/messaging/application/ForwardCashoutCommandUseCase.ts`, test | Verifies player JOINED; publishes to MessageBrokerPublisher; tests verify NATS payload shape | RT-2.6 | S |
 | RT-2.11 | `BroadcastGameEventUseCase` | `src/messaging/application/BroadcastGameEventUseCase.ts`, test | Routes player-specific events (bet_rejected, credit_failed) to single connection; broadcasts all others to ALL JOINED; uses MessageSerializer + WebSocketSender ports | RT-2.5, RT-2.6 | M |
-| RT-2.12 | `RouteClientMessageUseCase` | `src/messaging/application/RouteClientMessageUseCase.ts`, test | Switches on `message.type`; delegates to ForwardBet/ForwardCashout/responds pong; tests verify correct delegation | RT-2.9, RT-2.10, RT-2.11 | S |
+| RT-2.12 | `RouteClientMessageUseCase` | `src/messaging/application/RouteClientMessageUseCase.ts`, test | Switches on `message.type`; delegates to ForwardBet/ForwardCashout/HandleReAuth; ping/pong handled in transport layer (never reaches this use case); tests verify correct delegation | RT-2.9, RT-2.10, RT-2.11 | S |
 | RT-2.13 | Domain purity verification | CI script or test | `grep -r "@Injectable\|@Inject\|@Module\|nestjs\|bun\|nats\|protobuf" src/*/domain/ src/*/application/` = 0 matches | RT-2.1–RT-2.12 | S |
 
 ---
@@ -864,10 +926,10 @@ Parallel tracks:
 
 | ID | Task | Files | Acceptance Criteria | Deps | Size |
 |----|------|-------|---------------------|------|------|
-| RT-3.1 | `JwtAuthGateway` | `src/connection/infrastructure/JwtAuthGateway.ts`, test | Implements `AuthGateway` port; verifies JWT; extracts `playerId` + `operatorId` claims; returns `null` on invalid/expired token | RT-2.6 | S |
-| RT-3.2 | `InMemoryConnectionStore` | `src/connection/infrastructure/InMemoryConnectionStore.ts`, test | Implements `ConnectionStore`; `Map<string, Connection>` + `Map<playerId, ConnectionId>` secondary index; `getAllJoined()` filters by state; `count()` returns total | RT-2.6 | S |
+| RT-3.1 | `JwtAuthGateway` | `src/connection/infrastructure/JwtAuthGateway.ts`, test | Implements `AuthGateway` port; verifies JWT with asymmetric public key (RS256/EdDSA — never holds private key); explicitly enforces `algorithms: ['RS256']` to prevent algorithm confusion; extracts `playerId` + `operatorId` claims; returns `null` on invalid/expired token | RT-2.6 | S |
+| RT-3.2 | `InMemoryConnectionStore` | `src/connection/infrastructure/InMemoryConnectionStore.ts`, test | Implements `ConnectionStore`; `Map<string, Connection>` + `Map<playerId, ConnectionId>` secondary index; `getAllJoined()` filters by state; `forEachJoined()` iterates without array allocation (hot-path); `count()` returns total | RT-2.6 | S |
 | RT-3.3 | `ProtobufSerializer` | `src/messaging/infrastructure/ProtobufSerializer.ts`, test | Implements `MessageSerializer`; uses generated Protobuf classes from RT-1.5; encode/decode round-trips correctly for all message types | RT-1.5, RT-2.6 | M |
-| RT-3.4 | `BunWebSocketServer` + handlers | `src/transport/BunWebSocketServer.ts`, `src/transport/wsHandlers.ts`, `src/transport/upgradeHandler.ts` | `Bun.serve()` on configured port; HTTP upgrade extracts JWT → auth; `open` → HandleConnectionUseCase; `message` → deserialize + RouteClientMessage; `close` → HandleDisconnection; handlers are humble (no logic) | RT-3.1, RT-3.2, RT-3.3 | M |
+| RT-3.4 | `BunWebSocketServer` + handlers | `src/transport/BunWebSocketServer.ts`, `src/transport/wsHandlers.ts`, `src/transport/upgradeHandler.ts` | `Bun.serve()` on configured port; rejects upgrade with 503 when at `MAX_CONNECTIONS`; HTTP upgrade extracts JWT → auth; `open` → HandleConnectionUseCase; `message` → try/catch deserialize, handle ping/pong in transport, delegate rest to RouteClientMessage; `close` → HandleDisconnection; handlers are humble (no logic); per-connection rate limiter (token-bucket, exempt ping) | RT-3.1, RT-3.2, RT-3.3 | M |
 | RT-3.5 | `WebSocketSenderAdapter` | `src/transport/WebSocketSenderAdapter.ts` | Implements `WebSocketSender` port; wraps Bun's `ws.send()` and `ws.close()`; maintains `Map<ConnectionId, ServerWebSocket>` for lookups; `broadcast()` iterates and sends binary | RT-2.6 | S |
 | RT-3.6 | Health check endpoint | `src/transport/BunWebSocketServer.ts` (extend) | `GET /health` returns `{ status, connections, nats, uptime }`; non-WS HTTP requests get 404 | RT-3.4 | S |
 
@@ -920,7 +982,7 @@ Parallel tracks:
 |------------|------|-------|-------------|
 | **SP-1: Protobuf schema lock** | After RT-1.5 | Realtime + Frontend | Agreed `.proto` files in `packages/shared/proto/` |
 | **SP-2: NATS topic contract** | After RT-1.4 | Realtime + Game Engine | Verified topic names + JSON payload shapes match |
-| **SP-3: JWT format agreement** | After RT-3.1 | Realtime + Platform API | JWT claims (`playerId`, `operatorId`, `exp`), signing algorithm, key rotation |
+| **SP-3: JWT format agreement** | After RT-3.1 | Realtime + Platform API | JWT claims (`playerId`, `operatorId`, `exp`), asymmetric signing (RS256/EdDSA), Platform API holds private key, Realtime Server holds public key only |
 | **SP-4: End-to-end integration** | After RT-5.2 | All three engineers | Full bet→cashout flow: Frontend → WS → NATS → Engine → NATS → WS → Frontend |
 
 ---
@@ -931,9 +993,10 @@ Parallel tracks:
 |-----------|-------------|
 | `dep-inward-only` | Domain imports nothing. Application imports domain only. Infrastructure imports all. |
 | `dep-interface-ownership` | Ports defined in `application/ports/`, implemented in `infrastructure/` |
-| `bound-humble-object` | `BunWebSocketServer` + handlers contain zero logic — deserialize, delegate, serialize |
+| `entity-pure-business-rules` | `Connection.create()` accepts `connectedAt` parameter (no `Date.now()` side-effect); state transitions are pure |
+| `bound-humble-object` | `BunWebSocketServer` + handlers contain zero logic — deserialize, delegate, serialize; ping/pong handled at transport level |
 | `frame-web-in-infrastructure` | Bun WebSocket is an infrastructure detail in `transport/` |
-| `adapt-anti-corruption-layer` | Zod schemas validate all inbound NATS payloads and client messages |
+| `adapt-anti-corruption-layer` | Zod schemas validate all inbound NATS payloads; Protobuf uses `uint32` for monetary fields; deserialization errors caught at boundary |
 | `comp-screaming-architecture` | Folder structure says "connections and messaging", not "Bun app" |
 | `usecase-input-output-ports` | Every use case has typed input + discriminated union result |
 | `bound-service-internal-architecture` | Full clean architecture internally despite being a microservice |

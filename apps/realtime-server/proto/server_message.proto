@@ -1,0 +1,96 @@
+syntax = "proto3";
+package aviatrix.realtime;
+
+message ServerMessage {
+  oneof payload {
+    RoundNew round_new = 1;
+    RoundBetting round_betting = 2;
+    RoundStarted round_started = 3;
+    RoundCrashed round_crashed = 4;
+    Tick tick = 5;
+    BetPlaced bet_placed = 6;
+    BetWon bet_won = 7;
+    BetLost bet_lost = 8;
+    BetRejected bet_rejected = 9;
+    Pong pong = 10;
+    Error error = 11;
+    ReAuthRequired re_auth_required = 12;
+    CreditFailed credit_failed = 13;
+  }
+}
+
+message RoundNew {
+  string round_id = 1;
+  string hashed_seed = 2;
+}
+
+message RoundBetting {
+  string round_id = 1;
+  int64 ends_at = 2;
+}
+
+message RoundStarted {
+  string round_id = 1;
+}
+
+message RoundCrashed {
+  string round_id = 1;
+  double crash_point = 2;
+  string server_seed = 3;
+}
+
+message Tick {
+  string round_id = 1;
+  double multiplier = 2;
+  int32 elapsed_ms = 3;
+}
+
+message BetPlaced {
+  string bet_id = 1;
+  string player_id = 2;
+  string round_id = 3;
+  int32 amount_cents = 4;
+}
+
+message BetWon {
+  string bet_id = 1;
+  string player_id = 2;
+  string round_id = 3;
+  int32 amount_cents = 4;
+  double cashout_multiplier = 5;
+  int32 payout_cents = 6;
+}
+
+message BetLost {
+  string bet_id = 1;
+  string player_id = 2;
+  string round_id = 3;
+  int32 amount_cents = 4;
+  double crash_point = 5;
+}
+
+message BetRejected {
+  string player_id = 1;
+  string round_id = 2;
+  int32 amount_cents = 3;
+  string error = 4;
+}
+
+message ReAuthRequired {
+  int64 deadline_ms = 1;
+}
+
+message CreditFailed {
+  string player_id = 1;
+  string bet_id = 2;
+  string round_id = 3;
+  int32 payout_cents = 4;
+  string reason = 5;
+}
+
+message Pong {}
+
+message Error {
+  string code = 1;
+  string message = 2;
+}
